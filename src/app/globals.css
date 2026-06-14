@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: #1a1a2e;
+  --bg-card-hover: #22223a;
+  --border: #2a2a4a;
+  --text-primary: #e8e8f0;
+  --text-secondary: #8888aa;
+  --accent: #6c5ce7;
+  --accent-glow: rgba(108, 92, 231, 0.3);
+  --green: #00d68f;
+  --yellow: #f5c842;
+  --red: #ff6b6b;
+  --blue: #4dabf7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Glow effects */
+.glow-border {
+  border: 1px solid var(--border);
+  box-shadow: 0 0 15px rgba(108, 92, 231, 0.1);
+}
+
+.glow-border:hover {
+  box-shadow: 0 0 25px rgba(108, 92, 231, 0.2);
+  border-color: var(--accent);
+}
+
+/* Pulse animation for status indicators */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 5px currentColor; }
+  50% { opacity: 0.6; box-shadow: 0 0 15px currentColor; }
+}
+
+.status-live { color: var(--green); animation: pulse-glow 2s ease-in-out infinite; }
+.status-degraded { color: var(--yellow); }
+.status-offline { color: var(--red); }
+.status-busy { color: var(--blue); animation: pulse-glow 1s ease-in-out infinite; }
+
+/* Grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(108, 92, 231, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108, 92, 231, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
