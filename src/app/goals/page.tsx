@@ -2,7 +2,30 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Check, Trash2, Target } from "lucide-react";
+import Link from "next/link";
+import { Plus, Check, Trash2, Target, LayoutDashboard, BookOpen, Settings } from "lucide-react";
+
+function PageNav() {
+  const items = [
+    { label: "Mission Control", icon: <LayoutDashboard size={14} />, href: "/" },
+    { label: "Journal", icon: <BookOpen size={14} />, href: "/journal" },
+    { label: "Settings", icon: <Settings size={14} />, href: "/settings" },
+  ];
+  return (
+    <div className="flex items-center gap-1 mb-6">
+      {items.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)] transition-colors"
+        >
+          {item.icon}
+          <span>{item.label}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 interface Goal {
   id: string;
@@ -86,6 +109,7 @@ export default function GoalsPage() {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="max-w-2xl mx-auto">
+        <PageNav />
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
             <Target className="text-[var(--accent)]" size={28} />
