@@ -9,8 +9,11 @@ RUN npm ci
 # Copy source
 COPY . .
 
-# Build Next.js
+# Build Next.js (standalone output)
 RUN npm run build
+
+# Copy static assets into standalone output (required for browser JS/CSS)
+RUN cp -r .next/static .next/standalone/.next/static
 
 # Prune dev dependencies after build to slim the image
 RUN npm prune --production
@@ -21,4 +24,6 @@ EXPOSE 3000
 ENV NODE_ENV=production
 ENV PORT=3000
 
-CMD ["npm", "start"]
+WORKDIR /app/.next/standalone
+
+CMD ["node", "server.js"]
