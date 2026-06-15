@@ -2,15 +2,18 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install dependencies first (layer caching)
+# Install ALL dependencies (including dev — needed for build)
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy source
 COPY . .
 
 # Build Next.js
 RUN npm run build
+
+# Prune dev dependencies after build to slim the image
+RUN npm prune --production
 
 # Runtime
 EXPOSE 3000
