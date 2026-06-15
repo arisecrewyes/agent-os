@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Bot, Target, BookOpen, Settings,
   ChevronLeft, ChevronRight
@@ -26,12 +28,15 @@ interface SidebarProps {
 
 export default function Sidebar({ agents, activeAgent, onSelectAgent }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
+
+  const isHome = pathname === "/";
 
   const navItems = [
-    { id: null, label: "Mission Control", icon: <LayoutDashboard size={20} /> },
-    { id: "goals", label: "Goals", icon: <Target size={20} /> },
-    { id: "journal", label: "Journal", icon: <BookOpen size={20} /> },
-    { id: "settings", label: "Settings", icon: <Settings size={20} /> },
+    { id: null, label: "Mission Control", icon: <LayoutDashboard size={20} />, href: "/" },
+    { id: "goals", label: "Goals", icon: <Target size={20} />, href: "/goals" },
+    { id: "journal", label: "Journal", icon: <BookOpen size={20} />, href: "/journal" },
+    { id: "settings", label: "Settings", icon: <Settings size={20} />, href: "/settings" },
   ];
 
   return (
@@ -59,20 +64,43 @@ export default function Sidebar({ agents, activeAgent, onSelectAgent }: SidebarP
 
       {/* Main Nav */}
       <nav className="p-2 space-y-1">
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            onClick={() => onSelectAgent(item.id)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-              activeAgent === item.id
-                ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
-            }`}
-          >
-            {item.icon}
-            {!collapsed && <span>{item.label}</span>}
-          </button>
-        ))}
+        {navItems.map((item) => {
+          const isActive = item.href === "/" ? isHome : pathname.startsWith(item.href);
+
+          if (item.href === "/") {
+            // Mission Control — resets to home
+            return (
+              <button
+                key={item.label}
+                onClick={() => onSelectAgent(null)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
+                  isHome && !activeAgent
+                    ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                    : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                {item.icon}
+                {!collapsed && <span>{item.label}</span>}
+              </button>
+            );
+          }
+
+          // Goals, Journal, Settings — use Link for proper routing
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
+                isActive
+                  ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
+              }`}
+            >
+              {item.icon}
+              {!collapsed && <span>{item.label}</span>}
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Agents Section */}
