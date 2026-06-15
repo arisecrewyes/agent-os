@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Bot, Target, BookOpen, Settings,
@@ -63,6 +64,14 @@ interface ChatMessage {
 
 export default function Home() {
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
+  const pathname = usePathname();
+
+  // Reset active agent when navigating to a different page
+  useEffect(() => {
+    if (pathname !== "/") {
+      setActiveAgent(null);
+    }
+  }, [pathname]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
