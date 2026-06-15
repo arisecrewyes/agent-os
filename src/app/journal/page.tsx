@@ -2,7 +2,30 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Save, Mic, MicOff, Clock } from "lucide-react";
+import Link from "next/link";
+import { BookOpen, Save, Mic, MicOff, Clock, LayoutDashboard, Target, Settings } from "lucide-react";
+
+function PageNav() {
+  const items = [
+    { label: "Mission Control", icon: <LayoutDashboard size={14} />, href: "/" },
+    { label: "Goals", icon: <Target size={14} />, href: "/goals" },
+    { label: "Settings", icon: <Settings size={14} />, href: "/settings" },
+  ];
+  return (
+    <div className="border-b border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2 flex items-center gap-1 -mx-4 -mt-4 mb-4">
+      {items.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)] transition-colors"
+        >
+          {item.icon}
+          <span>{item.label}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 interface JournalEntry {
   id: string;
@@ -139,6 +162,29 @@ export default function JournalPage() {
 
       {/* Main Editor */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="px-4 py-2 border-b border-[var(--border)] bg-[var(--bg-secondary)] flex items-center gap-1">
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            <LayoutDashboard size={14} />
+            <span>Mission Control</span>
+          </Link>
+          <Link
+            href="/goals"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            <Target size={14} />
+            <span>Goals</span>
+          </Link>
+          <Link
+            href="/settings"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            <Settings size={14} />
+            <span>Settings</span>
+          </Link>
+        </div>
         <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2">
