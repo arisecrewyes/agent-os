@@ -22,9 +22,10 @@ interface Agent {
   status: "live" | "degraded" | "offline" | "busy";
   description: string;
   color: string;
+  repoUrl?: string;
 }
 
-const AGENTS: Agent[] = [
+const BUILT_IN_AGENTS: Agent[] = [
   {
     id: "openclaw",
     name: "OpenClaw",
@@ -64,20 +65,37 @@ interface ChatMessage {
 
 export default function Home() {
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
+  const [customAgents, setCustomAgents] = useState<Agent[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isListening, setIsListening] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [agentsLoaded, setAgentsLoaded] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  // Reset active agent when navigating to a different page
+  const allAgents = [...BUILT_IN_AGENTS, ...customAgents];
+
+  // Reset active agent when navigating away from home
   useEffect(() => {
     if (pathname !== "/") {
       setActiveAgent(null);
     }
   }, [pathname]);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const recognitionRef = useRef<any>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load custom agents from vault
+  useEffect(() => {
+    fetch("/api/agents")
+      .then((res) => res.json())
+      .then((data) => {
+        setCustomAgents(data.agents || []);
+      })
+      .catch(() => {
+        setCustomAgents([]);
+      })
+      .finally(() => setAgentsLoaded(true));
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -169,14 +187,55 @@ export default function Home() {
     }
   };
 
+  const handleAddAgent = async (agent: Omit<Agent, "status">) => {
+    const newAgent: Agent = { ...agent, status: "live" };
+    const updated = [...customAgents, newAgent];
+    setCustomAgents(updated);
+
+    // Persist to vault
+    await fetch("/api/agents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ agents: updated }),
+    });
+  };
+
+  const handleRemoveAgent = async (id: string) => {
+    const updated = customAgents.filter((a) => a.id !== id);
+    setCustomAgents(updated);
+
+    // If the removed agent was active, go back to home
+    if (activeAgent === id) {
+      setActiveAgent(null);
+    }
+
+    // Persist to vault
+    await fetch("/api/agents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ agents: updated }),
+    });
+  };
+
   const agentMessages = messages.filter((m) => m.agentId === activeAgent);
+  const currentAgent = allAgents.find((a) => a.id === activeAgent);
+
+  if (!agentsLoaded) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-[var(--text-secondary)]">Loading agents...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar
-        agents={AGENTS}
+        agents={allAgents}
         activeAgent={activeAgent}
         onSelectAgent={setActiveAgent}
+        onAddAgent={handleAddAgent}
+        onRemoveAgent={handleRemoveAgent}
       />
 
       <main className="flex-1 overflow-hidden grid-bg">
@@ -210,9 +269,9 @@ export default function Home() {
               {/* Stats Row */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 {[
-                  { label: "Active Agents", value: "3", icon: <Users size={20} />, color: "var(--green)" },
-                  { label: "Sessions Today", value: "—", icon: <Activity size={20} />, color: "var(--blue)" },
-                  { label: "Tasks Completed", value: "—", icon: <Zap size={20} />, color: "var(--yellow)" },
+                  { label: "Active Agents", value: String(allAgents.length), icon: <Users size={20} />, color: "var(--green)" },
+                  { label: "Custom Agents", value: String(customAgents.length), icon: <Zap size={20} />, color: "var(--yellow)" },
+                  { label: "Built-in Agents", value: String(BUILT_IN_AGENTS.length), icon: <Bot size={20} />, color: "var(--blue)" },
                   { label: "Vault Entries", value: "—", icon: <Brain size={20} />, color: "var(--accent)" },
                 ].map((stat, i) => (
                   <motion.div
@@ -231,13 +290,13 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Agent Cards */}
+              {/* Built-in Agents */}
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <Bot size={20} className="text-[var(--accent)]" />
-                AI Agents
+                Core Agents
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {AGENTS.map((agent, i) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                {BUILT_IN_AGENTS.map((agent, i) => (
                   <AgentCard
                     key={agent.id}
                     agent={agent}
@@ -247,8 +306,43 @@ export default function Home() {
                 ))}
               </div>
 
+              {/* Custom Agents */}
+              {customAgents.length > 0 && (
+                <>
+                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <Zap size={20} className="text-[var(--yellow)]" />
+                    Custom Agents
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                    {customAgents.map((agent, i) => (
+                      <AgentCard
+                        key={agent.id}
+                        agent={agent}
+                        index={i}
+                        onClick={() => setActiveAgent(agent.id)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Empty state for custom agents */}
+              {customAgents.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="border border-dashed border-[var(--border)] rounded-xl p-8 text-center mb-8"
+                >
+                  <Plus size={32} className="mx-auto mb-3 text-[var(--text-secondary)] opacity-40" />
+                  <p className="text-[var(--text-secondary)] text-sm mb-1">No custom agents yet</p>
+                  <p className="text-xs text-[var(--text-secondary)] opacity-60">
+                    Click "Add Agent" in the sidebar to create your first custom agent.
+                  </p>
+                </motion.div>
+              )}
+
               {/* Quick Actions */}
-              <h2 className="text-xl font-semibold mt-8 mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <Zap size={20} className="text-[var(--yellow)]" />
                 Quick Actions
               </h2>
@@ -272,7 +366,7 @@ export default function Home() {
                 ))}
               </div>
             </motion.div>
-          ) : (
+          ) : currentAgent ? (
             <motion.div
               key="chat"
               initial={{ opacity: 0, x: 20 }}
@@ -282,7 +376,7 @@ export default function Home() {
               className="h-full flex flex-col"
             >
               <ChatPanel
-                agent={AGENTS.find((a) => a.id === activeAgent)!}
+                agent={currentAgent}
                 messages={agentMessages}
                 input={input}
                 setInput={setInput}
@@ -295,7 +389,7 @@ export default function Home() {
                 messagesEndRef={messagesEndRef}
               />
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
       </main>
     </div>
