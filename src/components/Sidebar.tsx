@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Bot, Target, BookOpen, Settings,
-  ChevronLeft, ChevronRight, Plus, Trash2
+  ChevronLeft, ChevronRight, Plus, Trash2, Pin, PinOff,
+  ChevronUp, ChevronDown, GripVertical
 } from "lucide-react";
 import { useState } from "react";
 import StatusBadge from "./StatusBadge";
@@ -20,6 +21,8 @@ interface Agent {
   description: string;
   color: string;
   repoUrl?: string;
+  pinned?: boolean;
+  order?: number;
 }
 
 interface SidebarProps {
@@ -29,6 +32,8 @@ interface SidebarProps {
   onAddAgent?: (agent: Agent) => void;
   onRemoveAgent?: (id: string) => void;
   builtInIds?: string[];
+  onReorderAgents?: (agents: Agent[]) => void;
+  onTogglePin?: (id: string) => void;
 }
 
 export default function Sidebar({
@@ -38,6 +43,8 @@ export default function Sidebar({
   onAddAgent,
   onRemoveAgent,
   builtInIds = [],
+  onReorderAgents,
+  onTogglePin,
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -53,8 +60,123 @@ export default function Sidebar({
     { label: "Settings", icon: <Settings size={20} />, href: "/settings" },
   ];
 
+  // Split agents into built-in and custom
+  const builtIn = agents.filter((a) => builtInIds.includes(a.id));
+  const custom = agents.filter((a) => !builtInIds.includes(a.id));
+  // Sort custom: pinned first, then by order
+  const sortedCustom = [...custom].sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return (a.order ?? 999) - (b.order ?? 999);
+  });
+
   const handleAddAgent = (agent: Agent) => {
     onAddAgent?.(agent);
+  };
+
+  const moveAgent = (id: string, direction: "up" | "down") => {
+    const idx = sortedCustom.findIndex((a) => a.id === id);
+    if (idx === -1) return;
+
+    const newAgents = [...sortedCustom];
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= newAgents.length) return;
+
+    // Swap orders
+    const tempOrder = newAgents[idx].order ?? idx;
+    newAgents[idx] = { ...newAgents[idx], order: newAgents[swapIdx].order ?? swapIdx };
+    newAgents[swapIdx] = { ...newAgents[swapIdx], order: tempOrder };
+
+    // Build full agent list: built-in (unchanged) + reordered custom
+    onReorderAgents?.([...builtIn, ...newAgents]);
+  };
+
+  const handleTogglePin = (id: string) => {
+    onTogglePin?.(id);
+  };
+
+  const renderAgentButton = (agent: Agent, idx: number, isBuiltIn: boolean) => {
+    const isRemovable = !isBuiltIn && onRemoveAgent;
+    const showPinToggle = !isBuiltIn && onTogglePin;
+    const showReorder = !isBuiltIn && onReorderAgents && sortedCustom.length > 1;
+
+    return (
+      <div
+        key={agent.id}
+        className="relative group/agent"
+        onMouseEnter={() => setHoveredAgent(agent.id)}
+        onMouseLeave={() => setHoveredAgent(null)}
+      >
+        <button
+          onClick={() => onSelectAgent(agent.id)}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
+            activeAgent === agent.id
+              ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+              : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
+          }`}
+        >
+          {showReorder && !collapsed && (
+            <GripVertical size={12} className="text-[var(--text-secondary)]/30 shrink-0 cursor-grab" />
+          )}
+          <span className="text-lg shrink-0">{agent.icon}</span>
+          {!collapsed && (
+            <div className="flex-1 text-left min-w-0">
+              <div className="font-medium truncate flex items-center gap-1.5">
+                {agent.name}
+                {agent.pinned && (
+                  <Pin size={10} className="text-[var(--yellow)] shrink-0" />
+                )}
+              </div>
+              <StatusBadge status={agent.status} size="sm" />
+            </div>
+          )}
+        </button>
+
+        {/* Hover actions */}
+        {!collapsed && hoveredAgent === agent.id && (
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 z-10">
+            {showPinToggle && (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleTogglePin(agent.id); }}
+                className="p-1 rounded bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--yellow)] transition-colors"
+                title={agent.pinned ? "Unpin" : "Pin to top"}
+              >
+                {agent.pinned ? <PinOff size={10} /> : <Pin size={10} />}
+              </button>
+            )}
+            {showReorder && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); moveAgent(agent.id, "up"); }}
+                  disabled={idx === 0}
+                  className="p-1 rounded bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-30 transition-colors"
+                  title="Move up"
+                >
+                  <ChevronUp size={10} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); moveAgent(agent.id, "down"); }}
+                  disabled={idx === sortedCustom.length - 1}
+                  className="p-1 rounded bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-30 transition-colors"
+                  title="Move down"
+                >
+                  <ChevronDown size={10} />
+                </button>
+              </>
+            )}
+            {isRemovable && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onRemoveAgent(agent.id); }}
+                className="p-1 rounded bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                title="Remove agent"
+              >
+                <Trash2 size={10} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -131,49 +253,22 @@ export default function Sidebar({
               </span>
             </div>
           )}
+
           <div className="space-y-1">
-            {agents.map((agent) => (
-              <div
-                key={agent.id}
-                className="relative group/agent"
-                onMouseEnter={() => setHoveredAgent(agent.id)}
-                onMouseLeave={() => setHoveredAgent(null)}
-              >
-                <button
-                  onClick={() => onSelectAgent(agent.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                    activeAgent === agent.id
-                      ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
-                  }`}
-                >
-                  <span className="text-lg shrink-0">{agent.icon}</span>
-                  {!collapsed && (
-                    <div className="flex-1 text-left min-w-0">
-                      <div className="font-medium truncate">{agent.name}</div>
-                      <StatusBadge status={agent.status} size="sm" />
-                    </div>
-                  )}
-                </button>
-                {/* Delete button for custom agents */}
-                {!collapsed &&
-                  hoveredAgent === agent.id &&
-                  agent.id.startsWith("custom-") &&
-                  !builtInIds.includes(agent.id) &&
-                  onRemoveAgent && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRemoveAgent(agent.id);
-                      }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10 transition-colors z-10"
-                      title="Remove agent"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  )}
+            {/* Built-in agents (fixed at top) */}
+            {builtIn.map((agent, i) => renderAgentButton(agent, i, true))}
+
+            {/* Separator between built-in and custom */}
+            {sortedCustom.length > 0 && !collapsed && (
+              <div className="flex items-center gap-2 px-3 py-1.5">
+                <div className="flex-1 h-px bg-[var(--border)]" />
+                <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider">Custom</span>
+                <div className="flex-1 h-px bg-[var(--border)]" />
               </div>
-            ))}
+            )}
+
+            {/* Custom agents (reorderable) */}
+            {sortedCustom.map((agent, i) => renderAgentButton(agent, i, false))}
 
             {/* Add Agent Button */}
             <button
