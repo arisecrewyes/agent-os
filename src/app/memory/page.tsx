@@ -28,6 +28,7 @@ function PageNav() {
     { label: "Mission Control", icon: <LayoutDashboard size={14} />, href: "/" },
     { label: "Goals", icon: <Target size={14} />, href: "/goals" },
     { label: "Journal", icon: <BookOpen size={14} />, href: "/journal" },
+    { label: "Memory Engine", icon: <Brain size={14} />, href: "/memory-system" },
     { label: "Settings", icon: <Settings size={14} />, href: "/settings" },
   ];
   return (
