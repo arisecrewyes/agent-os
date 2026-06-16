@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Sparkles, Github, Wrench, Brain, Search, Shield, Zap, Globe, Code, Star } from "lucide-react";
+import { X, Plus, Sparkles, FolderGit2, Wrench, Brain, Search, Shield, Zap, Globe, Code, Star } from "lucide-react";
 
 interface AddAgentModalProps {
   open: boolean;
@@ -257,7 +257,7 @@ export default function AddAgentModal({ open, onClose, onAdd }: AddAgentModalPro
                   {/* Repo URL (optional) */}
                   <div>
                     <label className="text-sm font-medium block mb-1 flex items-center gap-1.5">
-                      <Github size={12} /> GitHub Repo URL (optional)
+                      <FolderGit2 size={12} /> GitHub Repo URL (optional)
                     </label>
                     <input
                       type="url"
