@@ -5,10 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Bot, Target, BookOpen, Settings,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Plus, Trash2
 } from "lucide-react";
 import { useState } from "react";
 import StatusBadge from "./StatusBadge";
+import AddAgentModal from "./AddAgentModal";
 
 interface Agent {
   id: string;
@@ -18,128 +19,184 @@ interface Agent {
   status: "live" | "degraded" | "offline" | "busy";
   description: string;
   color: string;
+  repoUrl?: string;
 }
 
 interface SidebarProps {
   agents: Agent[];
   activeAgent: string | null;
   onSelectAgent: (id: string | null) => void;
+  onAddAgent?: (agent: Omit<Agent, "status">) => void;
+  onRemoveAgent?: (id: string) => void;
 }
 
-export default function Sidebar({ agents, activeAgent, onSelectAgent }: SidebarProps) {
+export default function Sidebar({
+  agents,
+  activeAgent,
+  onSelectAgent,
+  onAddAgent,
+  onRemoveAgent,
+}: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [hoveredAgent, setHoveredAgent] = useState<string | null>(null);
   const pathname = usePathname();
 
   const isHome = pathname === "/";
 
   const navItems = [
-    { id: null, label: "Mission Control", icon: <LayoutDashboard size={20} />, href: "/" },
-    { id: "goals", label: "Goals", icon: <Target size={20} />, href: "/goals" },
-    { id: "journal", label: "Journal", icon: <BookOpen size={20} />, href: "/journal" },
-    { id: "settings", label: "Settings", icon: <Settings size={20} />, href: "/settings" },
+    { label: "Mission Control", icon: <LayoutDashboard size={20} />, href: "/" },
+    { label: "Goals", icon: <Target size={20} />, href: "/goals" },
+    { label: "Journal", icon: <BookOpen size={20} />, href: "/journal" },
+    { label: "Settings", icon: <Settings size={20} />, href: "/settings" },
   ];
 
+  const handleAddAgent = (agent: Omit<Agent, "status">) => {
+    onAddAgent?.({ ...agent, status: "live" });
+  };
+
   return (
-    <motion.aside
-      animate={{ width: collapsed ? 68 : 260 }}
-      transition={{ duration: 0.2 }}
-      className="h-screen bg-[var(--bg-secondary)] border-r border-[var(--border)] flex flex-col shrink-0 overflow-hidden"
-    >
-      {/* Logo */}
-      <div className="p-4 border-b border-[var(--border)] flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-lg font-bold shrink-0">
-          A
+    <>
+      <motion.aside
+        animate={{ width: collapsed ? 68 : 260 }}
+        transition={{ duration: 0.2 }}
+        className="h-screen bg-[var(--bg-secondary)] border-r border-[var(--border)] flex flex-col shrink-0 overflow-hidden"
+      >
+        {/* Logo */}
+        <div className="p-4 border-b border-[var(--border)] flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-lg font-bold shrink-0">
+            A
+          </div>
+          {!collapsed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <div className="font-bold text-sm">Agent OS</div>
+              <div className="text-xs text-[var(--text-secondary)]">Mission Control</div>
+            </motion.div>
+          )}
         </div>
-        {!collapsed && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="font-bold text-sm">Agent OS</div>
-            <div className="text-xs text-[var(--text-secondary)]">Mission Control</div>
-          </motion.div>
-        )}
-      </div>
 
-      {/* Main Nav */}
-      <nav className="p-2 space-y-1">
-        {navItems.map((item) => {
-          const isActive = item.href === "/" ? isHome : pathname.startsWith(item.href);
+        {/* Main Nav */}
+        <nav className="p-2 space-y-1">
+          {navItems.map((item) => {
+            const isActive =
+              item.href === "/" ? isHome && !activeAgent : pathname.startsWith(item.href);
 
-          if (item.href === "/") {
-            // Mission Control — resets to home
+            if (item.href === "/") {
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => onSelectAgent(null)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
+                    isActive
+                      ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  {item.icon}
+                  {!collapsed && <span>{item.label}</span>}
+                </button>
+              );
+            }
+
             return (
-              <button
+              <Link
                 key={item.label}
-                onClick={() => onSelectAgent(null)}
+                href={item.href}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                  isHome && !activeAgent
+                  isActive
                     ? "bg-[var(--accent)]/20 text-[var(--accent)]"
                     : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
                 }`}
               >
                 {item.icon}
                 {!collapsed && <span>{item.label}</span>}
-              </button>
+              </Link>
             );
-          }
+          })}
+        </nav>
 
-          // Goals, Journal, Settings — use Link for proper routing
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                isActive
-                  ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
-              }`}
-            >
-              {item.icon}
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          );
-        })}
-      </nav>
+        {/* Agents Section */}
+        <div className="flex-1 overflow-y-auto p-2">
+          {!collapsed && (
+            <div className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider px-3 py-2 flex items-center justify-between">
+              <span>Agents</span>
+              <span className="text-[10px] font-normal normal-case tracking-normal bg-[var(--bg-card)] px-1.5 py-0.5 rounded">
+                {agents.length}
+              </span>
+            </div>
+          )}
+          <div className="space-y-1">
+            {agents.map((agent) => (
+              <div
+                key={agent.id}
+                className="relative group/agent"
+                onMouseEnter={() => setHoveredAgent(agent.id)}
+                onMouseLeave={() => setHoveredAgent(null)}
+              >
+                <button
+                  onClick={() => onSelectAgent(agent.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
+                    activeAgent === agent.id
+                      ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  <span className="text-lg shrink-0">{agent.icon}</span>
+                  {!collapsed && (
+                    <div className="flex-1 text-left min-w-0">
+                      <div className="font-medium truncate">{agent.name}</div>
+                      <StatusBadge status={agent.status} size="sm" />
+                    </div>
+                  )}
+                </button>
+                {/* Delete button for custom agents */}
+                {!collapsed &&
+                  hoveredAgent === agent.id &&
+                  agent.id.startsWith("custom-") &&
+                  onRemoveAgent && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveAgent(agent.id);
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10 transition-colors z-10"
+                      title="Remove agent"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+              </div>
+            ))}
 
-      {/* Agents Section */}
-      <div className="flex-1 overflow-y-auto p-2">
-        {!collapsed && (
-          <div className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider px-3 py-2">
-            Agents
-          </div>
-        )}
-        <div className="space-y-1">
-          {agents.map((agent) => (
+            {/* Add Agent Button */}
             <button
-              key={agent.id}
-              onClick={() => onSelectAgent(agent.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                activeAgent === agent.id
-                  ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
-              }`}
+              onClick={() => setShowAddModal(true)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm border border-dashed border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]/50 hover:text-[var(--accent)] hover:bg-[var(--accent)]/5 mt-1"
             >
-              <span className="text-lg shrink-0">{agent.icon}</span>
-              {!collapsed && (
-                <div className="flex-1 text-left min-w-0">
-                  <div className="font-medium truncate">{agent.name}</div>
-                  <StatusBadge status={agent.status} size="sm" />
-                </div>
-              )}
+              <Plus size={18} className="shrink-0" />
+              {!collapsed && <span className="font-medium">Add Agent</span>}
             </button>
-          ))}
+          </div>
         </div>
-      </div>
 
-      {/* Collapse Toggle */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="p-3 border-t border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-      >
-        {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-      </button>
-    </motion.aside>
+        {/* Collapse Toggle */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-3 border-t border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+        >
+          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </button>
+      </motion.aside>
+
+      <AddAgentModal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAdd={handleAddAgent}
+      />
+    </>
   );
 }
