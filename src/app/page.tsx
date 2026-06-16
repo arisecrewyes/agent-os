@@ -187,7 +187,7 @@ export default function Home() {
     }
   };
 
-  const handleAddAgent = async (agent: Omit<Agent, "status">) => {
+  const handleAddAgent = async (agent: Agent) => {
     const newAgent: Agent = { ...agent, status: "live" };
     const updated = [...customAgents, newAgent];
     setCustomAgents(updated);
