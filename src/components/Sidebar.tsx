@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Bot, Target, BookOpen, Settings,
   ChevronLeft, ChevronRight, Plus, Trash2, Pin, PinOff,
-  ChevronUp, ChevronDown, GripVertical, Brain, Zap, Rocket, Layers, Database, Users, Heart, Cpu, Sparkles, MessageSquare
+  ChevronUp, ChevronDown, GripVertical, Brain, Zap, Rocket, Layers, Database, Users, Heart, Cpu, Sparkles, MessageSquare, Globe
 } from "lucide-react";
 import { useState } from "react";
 import StatusBadge from "./StatusBadge";
@@ -59,6 +59,7 @@ export default function Sidebar({
     { label: "Infinite Context", icon: <Database size={20} />, href: "/infinite-context" },
     { label: "Second Brain", icon: <Heart size={20} />, href: "/second-brain" },
     { label: "MiniMax M3", icon: <Cpu size={20} />, href: "/minimax-hermes" },
+    { label: "Odysseus", icon: <Globe size={20} />, href: "/odysseus" },
     { label: "Conductor Stack", icon: <Users size={20} />, href: "/conductor-stack" },
     { label: "Automation", icon: <Zap size={20} />, href: "/automation" },
     { label: "Getting Started", icon: <Rocket size={20} />, href: "/getting-started" },
