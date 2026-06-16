@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Bot, Target, BookOpen, Settings,
   ChevronLeft, ChevronRight, Plus, Trash2, Pin, PinOff,
-  ChevronUp, ChevronDown, GripVertical, Brain, Zap, Rocket
+  ChevronUp, ChevronDown, GripVertical, Brain, Zap, Rocket, Layers
 } from "lucide-react";
 import { useState } from "react";
 import StatusBadge from "./StatusBadge";
@@ -58,6 +58,7 @@ export default function Sidebar({
     { label: "Memory Engine", icon: <Brain size={20} />, href: "/memory-system" },
     { label: "Automation", icon: <Zap size={20} />, href: "/automation" },
     { label: "Getting Started", icon: <Rocket size={20} />, href: "/getting-started" },
+    { label: "Goldie Stack", icon: <Layers size={20} />, href: "/goldie-stack" },
     { label: "Goals", icon: <Target size={20} />, href: "/goals" },
     { label: "Journal", icon: <BookOpen size={20} />, href: "/journal" },
     { label: "Settings", icon: <Settings size={20} />, href: "/settings" },
