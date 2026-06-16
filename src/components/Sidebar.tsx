@@ -28,6 +28,7 @@ interface SidebarProps {
   onSelectAgent: (id: string | null) => void;
   onAddAgent?: (agent: Agent) => void;
   onRemoveAgent?: (id: string) => void;
+  builtInIds?: string[];
 }
 
 export default function Sidebar({
@@ -36,6 +37,7 @@ export default function Sidebar({
   onSelectAgent,
   onAddAgent,
   onRemoveAgent,
+  builtInIds = [],
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -157,6 +159,7 @@ export default function Sidebar({
                 {!collapsed &&
                   hoveredAgent === agent.id &&
                   agent.id.startsWith("custom-") &&
+                  !builtInIds.includes(agent.id) &&
                   onRemoveAgent && (
                     <button
                       onClick={(e) => {
