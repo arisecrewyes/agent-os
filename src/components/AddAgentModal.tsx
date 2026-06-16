@@ -12,6 +12,7 @@ interface AddAgentModalProps {
     name: string;
     role: string;
     icon: string;
+    status: "live" | "degraded" | "offline" | "busy";
     description: string;
     color: string;
     repoUrl?: string;
@@ -69,6 +70,7 @@ export default function AddAgentModal({ open, onClose, onAdd }: AddAgentModalPro
       name: preset.name,
       role: preset.role,
       icon: preset.icon,
+      status: "live" as const,
       description: preset.description,
       color: preset.color,
     });
@@ -82,6 +84,7 @@ export default function AddAgentModal({ open, onClose, onAdd }: AddAgentModalPro
       name: name.trim(),
       role: role.trim(),
       icon,
+      status: "live" as const,
       description: description.trim() || `${role} agent.`,
       color,
       repoUrl: repoUrl.trim() || undefined,
