@@ -12,6 +12,7 @@ import {
 import Sidebar from "@/components/Sidebar";
 import AgentCard from "@/components/AgentCard";
 import ChatPanel from "@/components/ChatPanel";
+import AgentCreatorPanel from "@/components/AgentCreatorPanel";
 import StatusBadge from "@/components/StatusBadge";
 
 interface Agent {
@@ -26,6 +27,15 @@ interface Agent {
 }
 
 const BUILT_IN_AGENTS: Agent[] = [
+  {
+    id: "agent-creator",
+    name: "Agent Creator",
+    role: "Build & Deploy Agents",
+    icon: "🏗️",
+    status: "live",
+    description: "AI-powered agent builder. Feed it a URL, repo, PDF, or eBook — it analyzes the source, asks about custom features, and builds a new agent + deployable project for you.",
+    color: "#e056fd",
+  },
   {
     id: "openclaw",
     name: "OpenClaw",
@@ -236,6 +246,7 @@ export default function Home() {
         onSelectAgent={setActiveAgent}
         onAddAgent={handleAddAgent}
         onRemoveAgent={handleRemoveAgent}
+        builtInIds={BUILT_IN_AGENTS.map((a) => a.id)}
       />
 
       <main className="flex-1 overflow-hidden grid-bg">
@@ -336,7 +347,7 @@ export default function Home() {
                   <Plus size={32} className="mx-auto mb-3 text-[var(--text-secondary)] opacity-40" />
                   <p className="text-[var(--text-secondary)] text-sm mb-1">No custom agents yet</p>
                   <p className="text-xs text-[var(--text-secondary)] opacity-60">
-                    Click "Add Agent" in the sidebar to create your first custom agent.
+                    Click "Add Agent" in the sidebar or use the 🏗️ Agent Creator to build one from a URL, repo, PDF, or eBook.
                   </p>
                 </motion.div>
               )}
@@ -365,6 +376,20 @@ export default function Home() {
                   </motion.button>
                 ))}
               </div>
+            </motion.div>
+          ) : activeAgent === "agent-creator" ? (
+            <motion.div
+              key="agent-creator"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="h-full flex flex-col"
+            >
+              <AgentCreatorPanel
+                onBack={() => setActiveAgent(null)}
+                onAgentCreated={handleAddAgent}
+              />
             </motion.div>
           ) : currentAgent ? (
             <motion.div
