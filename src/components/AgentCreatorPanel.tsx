@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Send, Loader2, Globe, Github, FileText, BookOpen,
+  ArrowLeft, Send, Loader2, Globe, FolderGit2, FileText, BookOpen,
   Plus, Sparkles, Check, ChevronRight, FolderOpen, Server,
   Globe2, Layers, MessageSquare, Wrench, X, Paperclip
 } from "lucide-react";
@@ -33,7 +33,7 @@ interface SourceOption {
 
 const SOURCE_OPTIONS: SourceOption[] = [
   { id: "url", label: "Website URL", icon: <Globe size={16} />, placeholder: "https://example.com" },
-  { id: "github", label: "GitHub Repo", icon: <Github size={16} />, placeholder: "https://github.com/owner/repo" },
+  { id: "github", label: "GitHub Repo", icon: <FolderGit2 size={16} />, placeholder: "https://github.com/owner/repo" },
   { id: "pdf", label: "PDF / Document", icon: <FileText size={16} />, placeholder: "Paste text content or describe the document..." },
   { id: "ebook", label: "eBook", icon: <BookOpen size={16} />, placeholder: "Paste eBook title, ISBN, or content summary..." },
   { id: "other", label: "Other / Custom", icon: <Plus size={16} />, placeholder: "Describe your source material..." },
@@ -42,7 +42,7 @@ const SOURCE_OPTIONS: SourceOption[] = [
 const DEPLOY_OPTIONS = [
   { id: "hostinger", label: "Hostinger VPS", icon: <Server size={16} />, desc: "Deploy as a Docker container on your VPS" },
   { id: "gostackbase", label: "GoStackBase", icon: <Globe2 size={16} />, desc: "Deploy to your GoStackBase web builder" },
-  { id: "github", label: "GitHub Repo", icon: <Github size={16} />, desc: "Push the project to a new GitHub repository" },
+  { id: "github", label: "GitHub Repo", icon: <FolderGit2 size={16} />, desc: "Push the project to a new GitHub repository" },
   { id: "local", label: "Local / Download", icon: <FolderOpen size={16} />, desc: "Generate files for local download" },
   { id: "agent-only", label: "Agent Only", icon: <Sparkles size={16} />, desc: "Just create the agent, no deployment" },
 ];
