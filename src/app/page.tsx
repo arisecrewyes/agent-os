@@ -24,6 +24,8 @@ interface Agent {
   description: string;
   color: string;
   repoUrl?: string;
+  pinned?: boolean;
+  order?: number;
 }
 
 const BUILT_IN_AGENTS: Agent[] = [
@@ -224,7 +226,6 @@ export default function Home() {
     );
     setCustomAgents(updated);
     await persistAgents(updated);
-    });
   };
 
   const handleRemoveAgent = async (id: string) => {
