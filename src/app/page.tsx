@@ -197,16 +197,33 @@ export default function Home() {
     }
   };
 
-  const handleAddAgent = async (agent: Agent) => {
-    const newAgent: Agent = { ...agent, status: "live" };
-    const updated = [...customAgents, newAgent];
-    setCustomAgents(updated);
-
-    // Persist to vault
+  const persistAgents = async (agents: Agent[]) => {
     await fetch("/api/agents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ agents: updated }),
+      body: JSON.stringify({ agents }),
+    });
+  };
+
+  const handleAddAgent = async (agent: Agent) => {
+    const newAgent: Agent = { ...agent, status: "live", order: customAgents.length };
+    const updated = [...customAgents, newAgent];
+    setCustomAgents(updated);
+    await persistAgents(updated);
+  };
+
+  const handleReorderAgents = async (allAgents: Agent[]) => {
+    const custom = allAgents.filter((a) => !BUILT_IN_AGENTS.find((b) => b.id === a.id));
+    setCustomAgents(custom);
+    await persistAgents(custom);
+  };
+
+  const handleTogglePin = async (id: string) => {
+    const updated = customAgents.map((a) =>
+      a.id === id ? { ...a, pinned: !a.pinned } : a
+    );
+    setCustomAgents(updated);
+    await persistAgents(updated);
     });
   };
 
@@ -246,6 +263,8 @@ export default function Home() {
         onSelectAgent={setActiveAgent}
         onAddAgent={handleAddAgent}
         onRemoveAgent={handleRemoveAgent}
+        onReorderAgents={handleReorderAgents}
+        onTogglePin={handleTogglePin}
         builtInIds={BUILT_IN_AGENTS.map((a) => a.id)}
       />
 
