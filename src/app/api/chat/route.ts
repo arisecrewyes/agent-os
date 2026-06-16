@@ -1,10 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs/promises";
+import path from "path";
+
+const VAULT_PATH = process.env.VAULT_PATH || "/data/agentos-vault";
+
+async function getAgentName(agentId: string): Promise<string> {
+  const builtIn: Record<string, string> = {
+    openclaw: "OpenClaw",
+    hermes: "Hermes",
+    claude: "Claude",
+  };
+  if (builtIn[agentId]) return builtIn[agentId];
+
+  // Look up custom agent name from vault
+  try {
+    const data = await fs.readFile(path.join(VAULT_PATH, "custom-agents.json"), "utf-8");
+    const agents = JSON.parse(data);
+    const agent = agents.find((a: any) => a.id === agentId);
+    return agent?.name || agentId;
+  } catch {
+    return agentId;
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
     const { message, agentId, history } = await req.json();
 
-    const systemPrompt = `You are ${agentId === "openclaw" ? "OpenClaw" : agentId === "hermes" ? "Hermes" : "Claude"}, an AI agent in the Agent OS mission control system. You are helpful, concise, and capable. You have access to the user's goals, journal, and vault context. Respond naturally and helpfully.`;
+    const agentName = await getAgentName(agentId);
+    const systemPrompt = `You are ${agentName}, an AI agent in the Agent OS mission control system. You are helpful, concise, and capable. You have access to the user's goals, journal, and vault context. Respond naturally and helpfully.`;
 
     const messages = [
       { role: "system", content: systemPrompt },
