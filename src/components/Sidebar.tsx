@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Bot, Target, BookOpen, Settings,
   ChevronLeft, ChevronRight, Plus, Trash2, Pin, PinOff,
-  ChevronUp, ChevronDown, GripVertical, Brain, Zap, Rocket, Layers, Database, Users, Heart, Cpu, Sparkles, MessageSquare, Globe, Monitor, Phone, Volume2
+  ChevronUp, ChevronDown, GripVertical, Brain, Zap, Rocket, Layers, Database, Users, Heart, Cpu, Sparkles, MessageSquare, Globe, Monitor, Phone, Volume2, Code
 } from "lucide-react";
 import { useState } from "react";
 import StatusBadge from "./StatusBadge";
@@ -62,6 +62,7 @@ export default function Sidebar({
     { label: "Odysseus", icon: <Globe size={20} />, href: "/odysseus" },
     { label: "Hermes vs Odysseus", icon: <Monitor size={20} />, href: "/hermes-vs-odysseus" },
     { label: "Hermes Voice", icon: <Phone size={20} />, href: "/hermes-voice" },
+    { label: "Bolt DIY", icon: <Code size={20} />, href: "/bolt-diy" },
     { label: "Conductor Stack", icon: <Users size={20} />, href: "/conductor-stack" },
     { label: "Automation", icon: <Zap size={20} />, href: "/automation" },
     { label: "Getting Started", icon: <Rocket size={20} />, href: "/getting-started" },
