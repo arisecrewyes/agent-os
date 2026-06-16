@@ -26,7 +26,7 @@ interface SidebarProps {
   agents: Agent[];
   activeAgent: string | null;
   onSelectAgent: (id: string | null) => void;
-  onAddAgent?: (agent: Omit<Agent, "status">) => void;
+  onAddAgent?: (agent: Agent) => void;
   onRemoveAgent?: (id: string) => void;
 }
 
@@ -51,8 +51,8 @@ export default function Sidebar({
     { label: "Settings", icon: <Settings size={20} />, href: "/settings" },
   ];
 
-  const handleAddAgent = (agent: Omit<Agent, "status">) => {
-    onAddAgent?.({ ...agent, status: "live" });
+  const handleAddAgent = (agent: Agent) => {
+    onAddAgent?.(agent);
   };
 
   return (
