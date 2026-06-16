@@ -263,14 +263,14 @@ export default function AgentCreatorPanel({ onBack, onAgentCreated }: AgentCreat
         {["source", "customize", "deploy", "done"].map((s, i) => (
           <div key={s} className="flex items-center gap-1.5">
             <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-              step === s ? "bg-[var(--accent)] text-white" :
-              ["source", "customize", "deploy", "done"].indexOf(step) > i ? "bg-[var(--green)] text-white" :
-              "bg-[var(--bg-card)] text-[var(--text-secondary)]
-            `}>
-              {["source", "customize", "deploy", "done"].indexOf(step) > i ? <Check size={10} /> : i + 1}
+              step === s ? 'bg-[var(--accent)] text-white' :
+              ['source', 'customize', 'deploy', 'done'].indexOf(step) > i ? 'bg-[var(--green)] text-white' :
+              'bg-[var(--bg-card)] text-[var(--text-secondary)]'
+            }`}>
+              {['source', 'customize', 'deploy', 'done'].indexOf(step) > i ? <Check size={10} /> : i + 1}
             </div>
             <span className={`text-[10px] ${
-              step === s ? "text-[var(--accent)] font-medium" : "text-[var(--text-secondary)]
+              step === s ? 'text-[var(--accent)] font-medium' : 'text-[var(--text-secondary)]'
             }`}>
               {s === "source" ? "Source" : s === "customize" ? "Customize" : s === "deploy" ? "Deploy" : "Done"}
             </span>
