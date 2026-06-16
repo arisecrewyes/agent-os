@@ -15,6 +15,7 @@ import {
 function PageNav() {
   const items = [
     { label: "Mission Control", icon: <LayoutDashboard size={14} />, href: "/" },
+    { label: "Automation", icon: <Zap size={14} />, href: "/automation" },
     { label: "Goals", icon: <Target size={14} />, href: "/goals" },
     { label: "Journal", icon: <BookOpen size={14} />, href: "/journal" },
     { label: "Settings", icon: <Settings size={14} />, href: "/settings" },
