@@ -7,7 +7,7 @@ import {
   Settings as SettingsIcon, Server, Key, FolderOpen,
   Globe, Shield, Bell, Palette, Check, X, Bot, Cpu,
   LayoutDashboard, Target, BookOpen, ChevronDown, ChevronRight,
-  Eye, EyeOff, AlertCircle, Save
+  Eye, EyeOff, AlertCircle, Save, User, Lock, Mail, Smartphone, KeyRound, RefreshCw
 } from "lucide-react";
 
 function PageNav() {
@@ -187,6 +187,21 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState("global");
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeUserTab, setActiveUserTab] = useState("profile");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const [passwordForUsername, setPasswordForUsername] = useState("");
+  const [twoFAMethod, setTwoFAMethod] = useState<"app" | "email" | "sso">("app");
+  const [twoFAEmail, setTwoFAEmail] = useState("");
+  const [twoFAPassword, setTwoFAPassword] = useState("");
+  const [userSaved, setUserSaved] = useState(false);
+  const [userError, setUserError] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [newBackupCodes, setNewBackupCodes] = useState<string[]>([]);
+  const [newTOTPSecret, setNewTOTPSecret] = useState("");
   const [configs, setConfigs] = useState<Record<string, Record<string, string>>>({});
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
   const [expandedAgent, setExpandedAgent] = useState<string | null>("global");
@@ -354,6 +369,253 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {/* User Management Section */}
+            <div className="mt-8 pt-8 border-t border-[var(--border)]">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <User size={18} className="text-[var(--accent)]" />
+                User Management
+              </h2>
+
+              {/* User Tabs */}
+              <div className="flex gap-2 mb-6">
+                {[
+                  { id: "profile", label: "Profile", icon: <User size={14} /> },
+                  { id: "password", label: "Password", icon: <Lock size={14} /> },
+                  { id: "2fa", label: "Two-Factor Auth", icon: <Shield size={14} /> },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveUserTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      activeUserTab === tab.id
+                        ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                        : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:bg-[var(--bg-card-hover)]"
+                    }`}
+                  >
+                    {tab.icon}
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <AnimatePresence mode="wait">
+                {/* Profile Tab */}
+                {activeUserTab === "profile" && (
+                  <motion.div key="profile" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                    className="glow-border rounded-xl bg-[var(--bg-card)] p-6">
+                    <h3 className="font-semibold mb-4">Change Username</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm text-[var(--text-secondary)] block mb-1">New Username</label>
+                        <input type="text" value={newUsername} onChange={e => setNewUsername(e.target.value)}
+                          placeholder="Enter new username" minLength={2}
+                          className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent)] transition-colors" />
+                      </div>
+                      <div>
+                        <label className="text-sm text-[var(--text-secondary)] block mb-1">Current Password (for verification)</label>
+                        <div className="relative">
+                          <input type={showCurrentPassword ? "text" : "password"} value={passwordForUsername}
+                            onChange={e => setPasswordForUsername(e.target.value)}
+                            placeholder="Enter current password"
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-2 pr-10 text-sm focus:outline-none focus:border-[var(--accent)] transition-colors" />
+                          <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                            {showCurrentPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        </div>
+                      </div>
+                      <button onClick={async () => {
+                        setUserError(""); setUserSaved(false);
+                        if (!newUsername || !passwordForUsername) { setUserError("All fields required"); return; }
+                        const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ action: "changeUsername", password: passwordForUsername, newUsername }) });
+                        const data = await res.json();
+                        if (!res.ok) { setUserError(data.error); return; }
+                        setUserSaved(true); setNewUsername(""); setPasswordForUsername("");
+                        setTimeout(() => setUserSaved(false), 2000);
+                      }} className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:bg-[var(--accent)]/80 transition-colors">
+                        {userSaved ? <><Check size={14} className="inline mr-1" /> Updated!</> : "Change Username"}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Password Tab */}
+                {activeUserTab === "password" && (
+                  <motion.div key="password" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                    className="glow-border rounded-xl bg-[var(--bg-card)] p-6">
+                    <h3 className="font-semibold mb-4">Change Password</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm text-[var(--text-secondary)] block mb-1">Current Password</label>
+                        <div className="relative">
+                          <input type={showCurrentPassword ? "text" : "password"} value={currentPassword}
+                            onChange={e => setCurrentPassword(e.target.value)}
+                            placeholder="Enter current password"
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-2 pr-10 text-sm focus:outline-none focus:border-[var(--accent)] transition-colors" />
+                          <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                            {showCurrentPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm text-[var(--text-secondary)] block mb-1">New Password (max 70 characters)</label>
+                        <div className="relative">
+                          <input type={showNewPassword ? "text" : "password"} value={newPassword}
+                            onChange={e => setNewPassword(e.target.value)}
+                            placeholder="Enter new password" maxLength={70}
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-2 pr-10 text-sm focus:outline-none focus:border-[var(--accent)] transition-colors" />
+                          <button type="button" onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                            {showNewPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm text-[var(--text-secondary)] block mb-1">Confirm New Password</label>
+                        <input type="password" value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          placeholder="Confirm new password" maxLength={70}
+                          className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent)] transition-colors" />
+                      </div>
+                      <button onClick={async () => {
+                        setUserError(""); setUserSaved(false);
+                        if (!currentPassword || !newPassword || !confirmPassword) { setUserError("All fields required"); return; }
+                        if (newPassword !== confirmPassword) { setUserError("New passwords do not match"); return; }
+                        if (newPassword.length > 70) { setUserError("Password must be 70 characters or less"); return; }
+                        const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ action: "changePassword", currentPassword, newPassword }) });
+                        const data = await res.json();
+                        if (!res.ok) { setUserError(data.error); return; }
+                        setUserSaved(true); setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+                        setTimeout(() => setUserSaved(false), 2000);
+                      }} className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:bg-[var(--accent)]/80 transition-colors">
+                        {userSaved ? <><Check size={14} className="inline mr-1" /> Changed!</> : "Change Password"}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 2FA Tab */}
+                {activeUserTab === "2fa" && (
+                  <motion.div key="2fa" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                    className="glow-border rounded-xl bg-[var(--bg-card)] p-6">
+                    <h3 className="font-semibold mb-4">Two-Factor Authentication</h3>
+
+                    {/* 2FA Method Selection */}
+                    <div className="space-y-3 mb-6">
+                      <p className="text-sm text-[var(--text-secondary)]">Choose your 2FA method:</p>
+                      {[
+                        { id: "app", label: "Authenticator App", desc: "Proton Pass, Google Authenticator, Authy, etc.", icon: <Smartphone size={16} /> },
+                        { id: "email", label: "Email", desc: "Receive codes via email", icon: <Mail size={16} /> },
+                        { id: "sso", label: "Single Sign-On (SSO)", desc: "Use your existing SSO provider", icon: <KeyRound size={16} /> },
+                      ].map((method) => (
+                        <button key={method.id} onClick={() => setTwoFAMethod(method.id as any)}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
+                            twoFAMethod === method.id
+                              ? "bg-[var(--accent)]/10 border border-[var(--accent)]/30"
+                              : "bg-[var(--bg-primary)] border border-[var(--border)] hover:border-[var(--accent)]/30"
+                          }`}>
+                          <div className={twoFAMethod === method.id ? "text-[var(--accent)]" : "text-[var(--text-secondary)]"}>{method.icon}</div>
+                          <div>
+                            <div className="text-sm font-medium">{method.label}</div>
+                            <div className="text-xs text-[var(--text-secondary)]">{method.desc}</div>
+                          </div>
+                          {twoFAMethod === method.id && <Check size={14} className="ml-auto text-[var(--accent)]" />}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Email field for email method */}
+                    {twoFAMethod === "email" && (
+                      <div className="mb-4">
+                        <label className="text-sm text-[var(--text-secondary)] block mb-1">Email Address for 2FA Codes</label>
+                        <input type="email" value={twoFAEmail} onChange={e => setTwoFAEmail(e.target.value)}
+                          placeholder="your@email.com"
+                          className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent)] transition-colors" />
+                      </div>
+                    )}
+
+                    {/* Password verification */}
+                    <div className="mb-4">
+                      <label className="text-sm text-[var(--text-secondary)] block mb-1">Current Password (for verification)</label>
+                      <input type="password" value={twoFAPassword}
+                        onChange={e => setTwoFAPassword(e.target.value)}
+                        placeholder="Enter current password"
+                        className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent)] transition-colors" />
+                    </div>
+
+                    <button onClick={async () => {
+                      setUserError(""); setUserSaved(false); setNewBackupCodes([]); setNewTOTPSecret("");
+                      if (!twoFAPassword) { setUserError("Password required"); return; }
+                      const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "configure2FA", password: twoFAPassword, enable: true, method: twoFAMethod, email: twoFAEmail }) });
+                      const data = await res.json();
+                      if (!res.ok) { setUserError(data.error); return; }
+                      setUserSaved(true); setTwoFAPassword("");
+                      if (data.backupCodes) setNewBackupCodes(data.backupCodes);
+                      if (data.twoFactorSecret) setNewTOTPSecret(data.twoFactorSecret);
+                      setTimeout(() => setUserSaved(false), 3000);
+                    }} className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-medium hover:bg-[var(--accent)]/80 transition-colors mr-2">
+                      Enable 2FA
+                    </button>
+
+                    <button onClick={async () => {
+                      setUserError(""); setUserSaved(false);
+                      if (!twoFAPassword) { setUserError("Password required"); return; }
+                      const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "configure2FA", password: twoFAPassword, enable: false }) });
+                      const data = await res.json();
+                      if (!res.ok) { setUserError(data.error); return; }
+                      setUserSaved(true); setTwoFAPassword(""); setNewBackupCodes([]); setNewTOTPSecret("");
+                    }} className="px-4 py-2 rounded-lg bg-red-500/10 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors">
+                      Disable 2FA
+                    </button>
+
+                    {/* TOTP Secret Display */}
+                    {newTOTPSecret && (
+                      <div className="mt-4 p-4 rounded-lg bg-[var(--yellow)]/5 border border-[var(--yellow)]/20">
+                        <h4 className="font-semibold text-sm mb-2 text-[var(--yellow)]">Scan this secret in your authenticator app:</h4>
+                        <code className="block bg-[var(--bg-primary)] rounded-lg p-2 text-xs font-mono break-all">{newTOTPSecret}</code>
+                      </div>
+                    )}
+
+                    {/* Backup Codes Display */}
+                    {newBackupCodes.length > 0 && (
+                      <div className="mt-4 p-4 rounded-lg bg-[var(--red)]/5 border border-[var(--red)]/20">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold text-sm text-red-400">Backup Codes — Save These!</h4>
+                          <button onClick={async () => {
+                            const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ action: "regenerateBackupCodes", password: twoFAPassword }) });
+                            const data = await res.json();
+                            if (data.backupCodes) setNewBackupCodes(data.backupCodes);
+                          }} className="text-xs text-[var(--accent)] hover:underline flex items-center gap-1">
+                            <RefreshCw size={10} /> Regenerate
+                          </button>
+                        </div>
+                        <p className="text-xs text-[var(--text-secondary)] mb-2">Use these if you lose access to your 2FA method. Each code works once.</p>
+                        <div className="grid grid-cols-2 gap-1">
+                          {newBackupCodes.map((code, i) => (
+                            <code key={i} className="bg-[var(--bg-primary)] rounded px-2 py-1 text-xs font-mono">{code}</code>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* User Error/Success Messages */}
+              {userError && (
+                <div className="mt-4 flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                  <AlertCircle size={14} className="text-red-400 shrink-0" />
+                  <p className="text-sm text-red-400">{userError}</p>
+                </div>
+              )}
+            </div>
+
             {/* Save Button */}
             <div className="flex justify-end mt-4">
               <motion.button
@@ -375,3 +637,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
