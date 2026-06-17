@@ -15,23 +15,36 @@ services:
     networks:
       - root_default
     labels:
-      # Traefik enable
+      # Enable Traefik for this container
       - "traefik.enable=true"
-      # Router
+
+      # --- HTTPS Router (primary) ---
       - "traefik.http.routers.agentos.rule=Host(`agentos.srv1121935.hstgr.cloud`)"
       - "traefik.http.routers.agentos.entrypoints=websecure"
+      - "traefik.http.routers.agentos.tls=true"
       - "traefik.http.routers.agentos.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.agentos.middlewares=agentos-auth"
-      # Middleware: forward auth to Agent OS login (optional — Agent OS has its own auth)
-      # If you want Traefik-level basic auth IN ADDITION to Agent OS auth, uncomment:
-      # - "traefik.http.middlewares.agentos-auth.basicauth.users=your-username:$$apr1$$your-hashed-password"
-      # Service
-      - "traefik.http.services.agentos.loadbalancer.server.port=3000"
-      # HTTP → HTTPS redirect
+      - "traefik.http.routers.agentos.middlewares=agentos-headers"
+
+      # --- HTTP Router (redirects to HTTPS) ---
       - "traefik.http.routers.agentos-http.rule=Host(`agentos.srv1121935.hstgr.cloud`)"
       - "traefik.http.routers.agentos-http.entrypoints=web"
       - "traefik.http.routers.agentos-http.middlewares=agentos-redirect"
+
+      # --- Middlewares ---
+      # Security headers (same as n8n service)
+      - "traefik.http.middlewares.agentos-headers.headers.SSLRedirect=true"
+      - "traefik.http.middlewares.agentos-headers.headers.STSSeconds=315360000"
+      - "traefik.http.middlewares.agentos-headers.headers.browserXSSFilter=true"
+      - "traefik.http.middlewares.agentos-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.agentos-headers.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.agentos-headers.headers.SSLHost=srv1121935.hstgr.cloud"
+      - "traefik.http.middlewares.agentos-headers.headers.STSIncludeSubdomains=true"
+      - "traefik.http.middlewares.agentos-headers.headers.STSPreload=true"
+      # HTTP → HTTPS redirect
       - "traefik.http.middlewares.agentos-redirect.redirectscheme.scheme=https"
+
+      # --- Service ---
+      - "traefik.http.services.agentos.loadbalancer.server.port=3000"
 
 volumes:
   agentos-data:
