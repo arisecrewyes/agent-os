@@ -47,6 +47,66 @@ function generateSessionToken(): string {
   return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+// ─── TOTP Verification ────────────────────────────────────────────────────
+// RFC 6238 HMAC-based OTP (SHA-1, 6-digit, 30-second step)
+
+function base32Decode(encoded: string): Uint8Array {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const cleaned = encoded.toUpperCase().replace(/=+$/, "");
+  const bits: number[] = [];
+  for (const char of cleaned) {
+    const val = alphabet.indexOf(char);
+    if (val === -1) continue;
+    for (let i = 4; i >= 0; i--) {
+      bits.push((val >> i) & 1);
+    }
+  }
+  const bytes = new Uint8Array(Math.floor(bits.length / 8));
+  for (let i = 0; i < bytes.length; i++) {
+    let byte = 0;
+    for (let j = 0; j < 8; j++) {
+      byte = (byte << 1) | bits[i * 8 + j];
+    }
+    bytes[i] = byte;
+  }
+  return bytes;
+}
+
+async function hmacSha1(key: Uint8Array, message: Uint8Array): Promise<Uint8Array> {
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw", key as BufferSource, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", cryptoKey, message as BufferSource);
+  return new Uint8Array(sig);
+}
+
+async function verifyTOTP(secret: string, code: string, window: number = 1): Promise<boolean> {
+  if (!/^\d{6}$/.test(code)) return false;
+  const key = base32Decode(secret);
+  const epoch = Math.floor(Date.now() / 1000);
+
+  for (let offset = -window; offset <= window; offset++) {
+    const counter = Math.floor(epoch / 30) + offset;
+    const counterBuf = new Uint8Array(8);
+    let c = counter;
+    for (let i = 7; i >= 0; i--) {
+      counterBuf[i] = c & 0xff;
+      c = Math.floor(c / 256);
+    }
+    const hmac = await hmacSha1(key, counterBuf);
+    const binary = ((hmac[hmac.length - 1] & 0x0f) << 24) |
+                   ((hmac[0] & 0x7f) << 16) |
+                   ((hmac[1] & 0xff) << 8) |
+                   (hmac[2] & 0xff);
+    const otp = binary % 1000000;
+    const otpStr = String(otp).padStart(6, "0");
+    if (otpStr === code) return true;
+  }
+  return false;
+}
+
+
+
 async function requireAuth(req: NextRequest): Promise<{ config: AuthConfig } | NextResponse> {
   const sessionToken = req.cookies.get("agent_os_session")?.value;
   const config = await readJSON(AUTH_FILE, null) as AuthConfig | null;
@@ -141,8 +201,11 @@ export async function POST(req: NextRequest) {
           if (backupIndex !== -1) {
             config.twoFactorBackupCodes.splice(backupIndex, 1);
             await writeJSON(AUTH_FILE, config);
-          } else if (!/^\d{6}$/.test(totpCode)) {
-            return NextResponse.json({ error: "Invalid 2FA code" }, { status: 401 });
+          } else {
+            const validTOTP = await verifyTOTP(config.twoFactorSecret, totpCode);
+            if (!validTOTP) {
+              return NextResponse.json({ error: "Invalid 2FA code" }, { status: 401 });
+            }
           }
         }
       }

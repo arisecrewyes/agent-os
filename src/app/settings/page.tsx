@@ -427,7 +427,7 @@ export default function SettingsPage() {
                       <button onClick={async () => {
                         setUserError(""); setUserSaved(false);
                         if (!newUsername || !passwordForUsername) { setUserError("All fields required"); return; }
-                        const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" },
+                        const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
                           body: JSON.stringify({ action: "changeUsername", password: passwordForUsername, newUsername }) });
                         const data = await res.json();
                         if (!res.ok) { setUserError(data.error); return; }
@@ -484,7 +484,7 @@ export default function SettingsPage() {
                         if (!currentPassword || !newPassword || !confirmPassword) { setUserError("All fields required"); return; }
                         if (newPassword !== confirmPassword) { setUserError("New passwords do not match"); return; }
                         if (newPassword.length > 70) { setUserError("Password must be 70 characters or less"); return; }
-                        const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" },
+                        const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
                           body: JSON.stringify({ action: "changePassword", currentPassword, newPassword }) });
                         const data = await res.json();
                         if (!res.ok) { setUserError(data.error); return; }
@@ -549,7 +549,7 @@ export default function SettingsPage() {
                     <button onClick={async () => {
                       setUserError(""); setUserSaved(false); setNewBackupCodes([]); setNewTOTPSecret("");
                       if (!twoFAPassword) { setUserError("Password required"); return; }
-                      const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" },
+                      const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
                         body: JSON.stringify({ action: "configure2FA", password: twoFAPassword, enable: true, method: twoFAMethod, email: twoFAEmail }) });
                       const data = await res.json();
                       if (!res.ok) { setUserError(data.error); return; }
@@ -564,7 +564,7 @@ export default function SettingsPage() {
                     <button onClick={async () => {
                       setUserError(""); setUserSaved(false);
                       if (!twoFAPassword) { setUserError("Password required"); return; }
-                      const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" },
+                      const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
                         body: JSON.stringify({ action: "configure2FA", password: twoFAPassword, enable: false }) });
                       const data = await res.json();
                       if (!res.ok) { setUserError(data.error); return; }
@@ -587,7 +587,7 @@ export default function SettingsPage() {
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="font-semibold text-sm text-red-400">Backup Codes — Save These!</h4>
                           <button onClick={async () => {
-                            const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" },
+                            const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
                               body: JSON.stringify({ action: "regenerateBackupCodes", password: twoFAPassword }) });
                             const data = await res.json();
                             if (data.backupCodes) setNewBackupCodes(data.backupCodes);
