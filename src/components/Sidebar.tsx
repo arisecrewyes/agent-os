@@ -63,9 +63,7 @@ export default function Sidebar({
     { label: "Hermes vs Odysseus", icon: <Monitor size={20} />, href: "/hermes-vs-odysseus" },
     { label: "Hermes Voice", icon: <Phone size={20} />, href: "/hermes-voice" },
     { label: "Bolt DIY", icon: <Code size={20} />, href: "/bolt-diy" },
-    { label: "Content Repos", icon: <Video size={20} />, href: "/repos-content" },
-    { label: "Memory Repos", icon: <Brain size={20} />, href: "/repos-memory" },
-    { label: "Skills Repos", icon: <Wrench size={20} />, href: "/repos-skills" },
+
     { label: "Conductor Stack", icon: <Users size={20} />, href: "/conductor-stack" },
     { label: "Automation", icon: <Zap size={20} />, href: "/automation" },
     { label: "Getting Started", icon: <Rocket size={20} />, href: "/getting-started" },

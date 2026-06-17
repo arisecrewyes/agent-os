@@ -65,6 +65,36 @@ const BUILT_IN_AGENTS: Agent[] = [
     description: "Thinking layer — strategy, planning, code execution, file analysis.",
     color: "#ff6b6b",
   },
+  {
+    id: "content-creator",
+    name: "Content Creator",
+    role: "Video, Media & AI Generation",
+    icon: "🎬",
+    status: "live",
+    description: "Specialized agent for content creation. Accesses 18+ open-source repos for video editing (Clypra), media download (reclip), AI image/video generation (Open-Generative-AI), social scraping, OSINT, sales outreach, and more. Collaborates with other agents when content tasks arise.",
+    color: "#ff7417",
+    repoUrl: "https://github.com/arisecrewyes/agent-os/tree/main/src/app/repos-content",
+  },
+  {
+    id: "memory-brain",
+    name: "Memory & Brain",
+    role: "Knowledge & Memory Systems",
+    icon: "🧠",
+    status: "live",
+    description: "Specialized agent for memory and brain improvements. Accesses 11+ open-source repos for agent memory (memanto), knowledge extraction (quant-mind), vector search (turbovec), agent collaboration (alook, deer-flow), and OSINT. Collaborates with other agents to enhance their memory and knowledge capabilities.",
+    color: "#6c5ce7",
+    repoUrl: "https://github.com/arisecrewyes/agent-os/tree/main/src/app/repos-memory",
+  },
+  {
+    id: "skill-master",
+    name: "Skill Master",
+    role: "Agent Skills & Optimization",
+    icon: "⚡",
+    status: "live",
+    description: "Specialized agent for agent skills. Accesses 11+ open-source repos for meta-skills (harness), skill optimization (SkillOpt), skill conversion (book-to-skill, Skill_Seekers), AI writing (humanizer), and knowledge graphs. Collaborates with other agents to improve their skills and capabilities.",
+    color: "#00b894",
+    repoUrl: "https://github.com/arisecrewyes/agent-os/tree/main/src/app/repos-skills",
+  },
 ];
 
 interface ChatMessage {
