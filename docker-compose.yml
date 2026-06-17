@@ -3,8 +3,8 @@ services:
     image: ghcr.io/arisecrewyes/agent-os:latest
     container_name: agent-os
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
@@ -12,6 +12,30 @@ services:
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-https://agentos.srv1121935.hstgr.cloud}
     volumes:
       - agentos-data:/data
+    networks:
+      - root_default
+    labels:
+      # Traefik enable
+      - "traefik.enable=true"
+      # Router
+      - "traefik.http.routers.agentos.rule=Host(`agentos.srv1121935.hstgr.cloud`)"
+      - "traefik.http.routers.agentos.entrypoints=websecure"
+      - "traefik.http.routers.agentos.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.agentos.middlewares=agentos-auth"
+      # Middleware: forward auth to Agent OS login (optional — Agent OS has its own auth)
+      # If you want Traefik-level basic auth IN ADDITION to Agent OS auth, uncomment:
+      # - "traefik.http.middlewares.agentos-auth.basicauth.users=your-username:$$apr1$$your-hashed-password"
+      # Service
+      - "traefik.http.services.agentos.loadbalancer.server.port=3000"
+      # HTTP → HTTPS redirect
+      - "traefik.http.routers.agentos-http.rule=Host(`agentos.srv1121935.hstgr.cloud`)"
+      - "traefik.http.routers.agentos-http.entrypoints=web"
+      - "traefik.http.routers.agentos-http.middlewares=agentos-redirect"
+      - "traefik.http.middlewares.agentos-redirect.redirectscheme.scheme=https"
 
 volumes:
   agentos-data:
+
+networks:
+  root_default:
+    external: true

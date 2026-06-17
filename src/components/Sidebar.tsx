@@ -355,6 +355,18 @@ export default function Sidebar({
           </div>
         </div>
 
+        {/* Logout */}
+        <button
+          onClick={() => {
+            fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) })
+              .then(() => window.location.href = "/login");
+          }}
+          className="p-3 border-t border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-red-400 transition-colors"
+          title="Sign out"
+        >
+          <span className="text-sm">🚪 Sign Out</span>
+        </button>
+
         {/* Collapse Toggle */}
         <button
           onClick={() => setCollapsed(!collapsed)}

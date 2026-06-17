@@ -646,19 +646,32 @@ export default function Home() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { label: "New Research Task", icon: <Search size={18} />, agent: "hermes" },
-                  { label: "Draft Strategy", icon: <Brain size={18} />, agent: "claude" },
-                  { label: "Route Task", icon: <Shield size={18} />, agent: "openclaw" },
+                  { label: "New Research Task", icon: <Search size={18} />, agent: "osint-specialist", desc: "OSINT, social recon, competitor research" },
+                  { label: "Draft Strategy", icon: <Brain size={18} />, agent: "claude", desc: "Planning, analysis, content strategy" },
+                  { label: "Route Task", icon: <Shield size={18} />, agent: "openclaw", desc: "Multi-agent orchestration" },
                 ].map((action) => (
                   <motion.button
                     key={action.label}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => setActiveAgent(action.agent)}
+                    onClick={() => {
+                      setActiveAgent(action.agent);
+                      // Set context-specific initial messages
+                      if (action.agent === "osint-specialist") {
+                        setInput("I'm your OSINT & Research specialist. I can help with:\n• Social media reconnaissance (Sherlock)\n• GitHub footprint analysis (GITRECON)\n• Advanced search techniques (Google dorking)\n• Competitor research\n\nWhat would you like me to investigate?");
+                      } else if (action.agent === "claude") {
+                        setInput("I'm your Intelligence Layer. I can help with:\n• Strategy & planning\n• Code execution\n• File analysis\n• Complex reasoning\n\nWhat would you like me to work on?");
+                      } else if (action.agent === "openclaw") {
+                        setInput("I'm your Gateway Router. I can help with:\n• Multi-agent orchestration\n• Task routing between agents\n• Session management\n• Agent coordination\n\nWhat task should I route?");
+                      }
+                    }}
                     className="glow-border rounded-xl p-4 bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] transition-colors text-left flex items-center gap-3"
                   >
                     <div className="text-[var(--accent)]">{action.icon}</div>
-                    <span>{action.label}</span>
+                    <div className="flex-1">
+                      <span className="block">{action.label}</span>
+                      <span className="text-xs text-[var(--text-secondary)]">{action.desc}</span>
+                    </div>
                     <ChevronRight size={16} className="ml-auto text-[var(--text-secondary)]" />
                   </motion.button>
                 ))}
