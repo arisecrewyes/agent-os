@@ -23,6 +23,7 @@ interface Agent {
   repoUrl?: string;
   pinned?: boolean;
   order?: number;
+  category?: string;
 }
 
 interface SidebarProps {
@@ -268,8 +269,35 @@ export default function Sidebar({
           )}
 
           <div className="space-y-1">
-            {/* Built-in agents (fixed at top) */}
-            {builtIn.map((agent, i) => renderAgentButton(agent, i, true))}
+            {/* Built-in agents grouped by category */}
+            {(() => {
+              const categories = [...new Set(builtIn.map(a => a.category || "Main"))];
+              const elements: React.JSX.Element[] = [];
+              let globalIdx = 0;
+              categories.forEach((cat, catIdx) => {
+                const catAgents = builtIn.filter(a => (a.category || "Main") === cat);
+                // Category header
+                if (!collapsed) {
+                  elements.push(
+                    <div key={`cat-${cat}`} className="flex items-center gap-2 px-3 py-1.5 mt-2 first:mt-0">
+                      <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">{cat}</span>
+                      <div className="flex-1 h-px bg-[var(--border)]" />
+                    </div>
+                  );
+                }
+                catAgents.forEach((agent) => {
+                  elements.push(renderAgentButton(agent, globalIdx, true));
+                  globalIdx++;
+                });
+                // Separator between categories
+                if (catIdx < categories.length - 1 && !collapsed) {
+                  elements.push(
+                    <div key={`sep-${cat}`} className="h-px bg-[var(--border)]/30 mx-3" />
+                  );
+                }
+              });
+              return elements;
+            })()}
 
             {/* Separator between built-in and custom */}
             {sortedCustom.length > 0 && !collapsed && (

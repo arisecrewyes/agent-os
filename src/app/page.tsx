@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Bot, Target, BookOpen, Settings,
   Mic, MicOff, Send, ChevronRight, Activity,
   Zap, Brain, Search, Shield, Plus, Check, X,
-  MessageSquare, Clock, BarChart3, Users
+  MessageSquare, Clock, BarChart3, Users, Wrench, RefreshCw, Code, Globe, Rocket
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import AgentCard from "@/components/AgentCard";
@@ -26,12 +26,214 @@ interface Agent {
   repoUrl?: string;
   pinned?: boolean;
   order?: number;
+  category?: string;
 }
 
 const BUILT_IN_AGENTS: Agent[] = [
+  // ==================== MAIN AGENTS ====================
   {
     id: "agent-creator",
     name: "Agent Creator",
+    role: "Build & Deploy Custom Agents",
+    icon: "🏗️",
+    status: "live",
+    description: "AI-powered agent builder. Feed it a URL, repo, PDF, or eBook. Asks about your OS/device setup, then builds and installs a new agent + deployable project. Troubleshoots until fully functional.",
+    color: "#e056fd",
+    category: "Main",
+  },
+  {
+    id: "openclaw",
+    name: "OpenClaw",
+    role: "Gateway Router & Orchestrator",
+    icon: "🦀",
+    status: "live",
+    description: "Multi-agent gateway & session router. Routes tasks between all agents, manages sessions, coordinates inter-agent communication. The central nervous system of Agent OS.",
+    color: "#6c5ce7",
+    category: "Main",
+  },
+  {
+    id: "claude",
+    name: "Claude",
+    role: "Intelligence Layer",
+    icon: "🧠",
+    status: "live",
+    description: "Thinking layer — strategy, planning, code execution, file analysis. Handles complex reasoning and coordinates with specialist agents.",
+    color: "#ff6b6b",
+    category: "Main",
+  },
+
+  // ==================== CONTENT CREATION ====================
+  {
+    id: "content-creator",
+    name: "Content Creator",
+    role: "Video, Media & AI Generation",
+    icon: "🎬",
+    status: "live",
+    description: "Executes content creation setup. Installs reclip, Clypra, Hyperframes, Open-Generative-AI, Sherlock, Pake, social-media-scraping-apis, Nango, SalesGPT, leads-generator, ViMax, VibeVoice, wa-automate. Manages 18+ repos. Asks OS/device config, prompts for API keys, troubleshoots until fully functional.",
+    color: "#ff7417",
+    category: "Content Creation",
+  },
+
+  // ==================== MEMORY & BRAIN ====================
+  {
+    id: "memory-engine",
+    name: "Memory Engine",
+    role: "PARA & Second Brain Setup",
+    icon: "📚",
+    status: "live",
+    description: "Sets up the complete Memory Engine. Installs OMI, creates PARA folder structure, connects Obsidian vault, wires Claude for context injection. Asks OS/device config first, then builds your second brain that compounds daily.",
+    color: "#fdcb6e",
+    category: "Memory & Brain",
+  },
+  {
+    id: "infinite-context",
+    name: "Infinite Context",
+    role: "Claude + Obsidian + OMI Loop",
+    icon: "🔄",
+    status: "live",
+    description: "Implements the two-way context loop. Sets up OMI capture, Obsidian storage, Claude reading/writing. Manages daily notes, personal context document, graph view. Compounds your AI context over time.",
+    color: "#e056fd",
+    category: "Memory & Brain",
+  },
+  {
+    id: "memory-brain",
+    name: "Memory & Brain Systems",
+    role: "Knowledge & Vector Search",
+    icon: "🧠",
+    status: "live",
+    description: "Installs memory and brain improvement systems. Sets up memanto, quant-mind, turbovec, alook collaboration, deer-flow SuperAgent. Manages 11+ repos for knowledge extraction and agent memory.",
+    color: "#6c5ce7",
+    category: "Memory & Brain",
+  },
+
+  // ==================== OSINT & RESEARCH ====================
+  {
+    id: "osint-specialist",
+    name: "OSINT Specialist",
+    role: "Research & Intelligence",
+    icon: "🔍",
+    status: "live",
+    description: "Executes OSINT and research setup. Installs Sherlock, GITRECON, google-dorking. Performs social media reconnaissance, GitHub footprint analysis, and advanced search techniques.",
+    color: "#0984e3",
+    category: "OSINT & Research",
+  },
+
+  // ==================== SKILLS & CREATION ====================
+  {
+    id: "skill-master",
+    name: "Skill Master",
+    role: "Agent Skills & Optimization",
+    icon: "⚡",
+    status: "live",
+    description: "Manages agent skills. Installs harness meta-skill, stop-slop, SkillOpt, book-to-skill, Skill_Seekers, humanizer. Converts documentation into Claude Code skills. Optimizes agent performance across the entire OS.",
+    color: "#00b894",
+    category: "Skills & Creation",
+  },
+
+  // ==================== AUTOMATION ====================
+  {
+    id: "hermes-automation",
+    name: "Hermes Automation",
+    role: "Cron, Gateway & Agent Teams",
+    icon: "🤖",
+    status: "live",
+    description: "Sets up Hermes automation blueprints. Installs Hermes, configures cron scheduler, Telegram/Discord gateway, agent teams (profiles), self-improving skills, parallel subagents. Asks OS/device config, prompts for API keys.",
+    color: "#f5c842",
+    category: "Automation",
+  },
+  {
+    id: "conductor-stack",
+    name: "Conductor",
+    role: "Browser Agent Orchestration",
+    icon: "🎻",
+    status: "live",
+    description: "Installs and orchestrates browser agents. Sets up browse.sh catalog (250+ skills), creates SOPs, schedules agent chains, manages cross-platform deployment. Your control tower for an army of AI browser agents.",
+    color: "#e17055",
+    category: "Automation",
+  },
+  {
+    id: "hermes-voice",
+    name: "Hermes Voice",
+    role: "Phone Integration & Voice AI",
+    icon: "📞",
+    status: "live",
+    description: "Sets up phone calling to your Hermes agent. Installs voice platform integration (VoiceWave/Pyxa/Magica/Dograh/fal.ai), configures cloudflared tunnel, connects telephony. Asks OS/device config, prompts for API keys and tool links.",
+    color: "#fdcb6e",
+    category: "Automation",
+  },
+
+  // ==================== CODING & DEVELOPMENT ====================
+  {
+    id: "bolt-diy",
+    name: "Bolt DIY",
+    role: "Free AI Coding & Development",
+    icon: "💻",
+    status: "live",
+    description: "Executes Bolt DIY setup. Installs from GitHub, connects Claude 3.7 Sonnet via OpenRouter, sets up free AI APIs (Google Flash 2.0, Misra, DeepSeek), deploys to Netlify. Builds web apps, games, tools with AI.",
+    color: "#6c5ce7",
+    category: "Coding & Development",
+  },
+  {
+    id: "goldie-stack",
+    name: "Goldie Stack",
+    role: "Hermes + Codex + MCP",
+    icon: "🏗️",
+    status: "live",
+    description: "Sets up the Goldie Stack Framework. Installs Hermes as MCP server, connects Codex via MCP, configures 10 MCP tools. Implements the 4-layer Brain/Hands/Builder/Output system.",
+    color: "#e056fd",
+    category: "Coding & Development",
+  },
+
+  // ==================== AI WORKSPACE ====================
+  {
+    id: "minimax-hermes",
+    name: "MiniMax M3 + Hermes",
+    role: "Free AI Agent Stack",
+    icon: "⚙️",
+    status: "live",
+    description: "Sets up MiniMax M3 + Hermes Agent. Installs Hermes, connects MiniMax M3 brain via Ollama/OpenRouter, configures fast model. Implements the Agent OS Framework (Ears, Brain, Hands).",
+    color: "#0984e3",
+    category: "AI Workspace",
+  },
+  {
+    id: "odysseus-agent",
+    name: "Odysseus",
+    role: "Self-Hosted AI Workspace",
+    icon: "🌐",
+    status: "live",
+    description: "Installs and configures Odysseus AI workspace. Sets up local/cloud models, chat, operator agent, research helper, memory. Implements the Odysseus Operator System (Brain, Chatter, Operator, Memory layers).",
+    color: "#00b894",
+    category: "AI Workspace",
+  },
+  {
+    id: "second-brain",
+    name: "Second Brain",
+    role: "Voice Training & Knowledge Compounding",
+    icon: "💾",
+    status: "live",
+    description: "Builds your complete second brain. Sets up Obsidian vault, PARA structure, auto-notes, voice training, content-in-your-voice system. Implements 30-day rollout plan with 110+ prompts.",
+    color: "#fdcb6e",
+    category: "AI Workspace",
+  },
+
+  // ==================== GETTING STARTED ====================
+  {
+    id: "getting-started-agent",
+    name: "Getting Started",
+    role: "Free AI Stack Guide & Installer",
+    icon: "🚀",
+    status: "live",
+    description: "Walks through the complete free AI stack setup. Hermes + OpenRouter + Owl Alpha + Python. Installs everything step by step with 5-phase SOP. Asks OS/device config, prompts for API keys, troubleshoots until fully functional.",
+    color: "#ff6b6b",
+    category: "Getting Started",
+  },
+];
+
+// Keep the old agent-creator reference for backward compat
+const LEGACY_AGENTS = [
+  {
+    id: "agent-creator-legacy",
+    name: "Agent Creator (Legacy)",
     role: "Build & Deploy Agents",
     icon: "🏗️",
     status: "live",
@@ -351,21 +553,56 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Built-in Agents */}
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Bot size={20} className="text-[var(--accent)]" />
-                Core Agents
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                {BUILT_IN_AGENTS.map((agent, i) => (
-                  <AgentCard
-                    key={agent.id}
-                    agent={agent}
-                    index={i}
-                    onClick={() => setActiveAgent(agent.id)}
-                  />
-                ))}
-              </div>
+              {/* Built-in Agents by Category */}
+              {(() => {
+                const categories = [...new Set(BUILT_IN_AGENTS.map(a => a.category || "Main"))];
+                const categoryIcons: Record<string, any> = {
+                  "Main": Bot,
+                  "Content Creation": Zap,
+                  "Memory & Brain": Brain,
+                  "OSINT & Research": Search,
+                  "Skills & Creation": Wrench,
+                  "Automation": RefreshCw,
+                  "Coding & Development": Code,
+                  "AI Workspace": Globe,
+                  "Getting Started": Rocket,
+                };
+                const categoryColors: Record<string, string> = {
+                  "Main": "#6c5ce7",
+                  "Content Creation": "#ff7417",
+                  "Memory & Brain": "#fdcb6e",
+                  "OSINT & Research": "#0984e3",
+                  "Skills & Creation": "#00b894",
+                  "Automation": "#f5c842",
+                  "Coding & Development": "#e056fd",
+                  "AI Workspace": "#0984e3",
+                  "Getting Started": "#ff6b6b",
+                };
+                return categories.map(cat => {
+                  const catAgents = BUILT_IN_AGENTS.filter(a => (a.category || "Main") === cat);
+                  const Icon = categoryIcons[cat] || Bot;
+                  const color = categoryColors[cat] || "#6c5ce7";
+                  return (
+                    <div key={cat} className="mb-8">
+                      <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <Icon size={20} style={{ color }} />
+                        {cat}
+                        <span className="text-xs text-[var(--text-secondary)] font-normal">({catAgents.length})</span>
+                      </h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {catAgents.map((agent, i) => (
+                          <AgentCard
+                            key={agent.id}
+                            agent={agent}
+                            index={i}
+                            onClick={() => setActiveAgent(agent.id)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
 
               {/* Custom Agents */}
               {customAgents.length > 0 && (
