@@ -1,42 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import { readJSON, writeJSON } from "@/lib/vault";
 
-const VAULT_PATH = process.env.VAULT_PATH || "/data/agentos-vault";
-const SETTINGS_FILE = path.join(VAULT_PATH, "settings.json");
+const CONFIGS_FILE = "agent-configs.json";
 
-async function ensureVault() {
+export async function GET() {
   try {
-    await fs.mkdir(VAULT_PATH, { recursive: true });
-  } catch {}
-}
-
-async function readSettings() {
-  try {
-    const data = await fs.readFile(SETTINGS_FILE, "utf-8");
-    return JSON.parse(data);
+    const configs = await readJSON(CONFIGS_FILE, {});
+    return NextResponse.json({ configs });
   } catch {
-    return {};
+    return NextResponse.json({ configs: {} });
   }
 }
 
-async function writeSettings(settings: any) {
-  await ensureVault();
-  await fs.writeFile(SETTINGS_FILE, JSON.stringify(settings, null, 2));
-}
-
-export async function GET() {
-  const settings = await readSettings();
-  return NextResponse.json({
-    vaultPath: process.env.VAULT_PATH || "/data/agentos-vault",
-    appUrl: process.env.NEXT_PUBLIC_APP_URL || "",
-    openrouterKey: process.env.OPENROUTER_API_KEY ? "••••••••" : "",
-    ...settings,
-  });
-}
-
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  await writeSettings(body);
-  return NextResponse.json({ success: true });
+  try {
+    const body = await req.json();
+    const { configs } = body;
+    await writeJSON(CONFIGS_FILE, configs);
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || "Failed to save configs" },
+      { status: 500 }
+    );
+  }
 }

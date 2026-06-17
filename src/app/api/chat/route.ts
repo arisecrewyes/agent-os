@@ -180,11 +180,27 @@ export async function POST(req: NextRequest) {
       { role: "user" as const, content: message },
     ];
 
+    // Load API key from vault (user-configured) or fall back to env
+    let apiKey = process.env.OPENROUTER_API_KEY || "";
+    if (!apiKey) {
+      try {
+        const globalConfigs = await readJSON("agent-configs.json", {});
+        apiKey = globalConfigs?.global?.OPENROUTER_API_KEY || "";
+      } catch {}
+    }
+
+    if (!apiKey) {
+      return NextResponse.json(
+        { response: "⚠️ OpenRouter API key not configured. Go to Settings → Global to add your API key." },
+        { status: 200 }
+      );
+    }
+
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
         "X-Title": "Agent OS",
       },

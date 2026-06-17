@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -50,25 +50,29 @@ export default function Sidebar({
   const [collapsed, setCollapsed] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [hoveredAgent, setHoveredAgent] = useState<string | null>(null);
+  const [walkthroughsOpen, setWalkthroughsOpen] = useState(false);
   const pathname = usePathname();
 
   const isHome = pathname === "/";
 
+  const walkthroughItems = [
+    { label: "Getting Started", icon: <Rocket size={16} />, href: "/getting-started" },
+    { label: "Memory Engine", icon: <Brain size={16} />, href: "/memory-system" },
+    { label: "Infinite Context", icon: <Database size={16} />, href: "/infinite-context" },
+    { label: "Second Brain", icon: <Heart size={16} />, href: "/second-brain" },
+    { label: "MiniMax M3", icon: <Cpu size={16} />, href: "/minimax-hermes" },
+    { label: "Odysseus", icon: <Globe size={16} />, href: "/odysseus" },
+    { label: "Hermes vs Odysseus", icon: <Monitor size={16} />, href: "/hermes-vs-odysseus" },
+    { label: "Hermes Voice", icon: <Phone size={16} />, href: "/hermes-voice" },
+    { label: "Bolt DIY", icon: <Code size={16} />, href: "/bolt-diy" },
+    { label: "Conductor Stack", icon: <Users size={16} />, href: "/conductor-stack" },
+    { label: "Automation", icon: <Zap size={16} />, href: "/automation" },
+    { label: "Goldie Stack", icon: <Layers size={16} />, href: "/goldie-stack" },
+  ];
+
   const navItems = [
     { label: "Mission Control", icon: <LayoutDashboard size={20} />, href: "/" },
-    { label: "Memory Engine", icon: <Brain size={20} />, href: "/memory-system" },
-    { label: "Infinite Context", icon: <Database size={20} />, href: "/infinite-context" },
-    { label: "Second Brain", icon: <Heart size={20} />, href: "/second-brain" },
-    { label: "MiniMax M3", icon: <Cpu size={20} />, href: "/minimax-hermes" },
-    { label: "Odysseus", icon: <Globe size={20} />, href: "/odysseus" },
-    { label: "Hermes vs Odysseus", icon: <Monitor size={20} />, href: "/hermes-vs-odysseus" },
-    { label: "Hermes Voice", icon: <Phone size={20} />, href: "/hermes-voice" },
-    { label: "Bolt DIY", icon: <Code size={20} />, href: "/bolt-diy" },
-
-    { label: "Conductor Stack", icon: <Users size={20} />, href: "/conductor-stack" },
-    { label: "Automation", icon: <Zap size={20} />, href: "/automation" },
-    { label: "Getting Started", icon: <Rocket size={20} />, href: "/getting-started" },
-    { label: "Goldie Stack", icon: <Layers size={20} />, href: "/goldie-stack" },
+    { label: "Walkthroughs", icon: <BookOpen size={20} />, href: null, isWalkthroughs: true },
     { label: "Goals", icon: <Target size={20} />, href: "/goals" },
     { label: "Journal", icon: <BookOpen size={20} />, href: "/journal" },
     { label: "Settings", icon: <Settings size={20} />, href: "/settings" },
@@ -220,38 +224,67 @@ export default function Sidebar({
         {/* Main Nav */}
         <nav className="p-2 space-y-1">
           {navItems.map((item) => {
-            const isActive =
-              item.href === "/" ? isHome && !activeAgent : pathname.startsWith(item.href);
+            const isActive = item.href === "/" ? isHome && !activeAgent : item.href ? pathname.startsWith(item.href) : false;
+
+            // Walkthroughs dropdown
+            if ((item as any).isWalkthroughs) {
+              const wtActive = walkthroughItems.some((w: any) => pathname.startsWith(w.href));
+              return (
+                <div key={item.label}>
+                  <button
+                    onClick={() => setWalkthroughsOpen(!walkthroughsOpen)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
+                      wtActive ? "bg-[var(--accent)]/20 text-[var(--accent)]" : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
+                    }`}
+                  >
+                    {item.icon}
+                    {!collapsed && <span className="flex-1 text-left">{item.label}</span>}
+                    {!collapsed && <ChevronDown size={14} className={`transition-transform ${walkthroughsOpen ? "rotate-180" : ""}`} />}
+                  </button>
+                  <AnimatePresence>
+                    {walkthroughsOpen && !collapsed && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden pl-4 space-y-0.5 mt-0.5"
+                      >
+                        {walkthroughItems.map((wt: any) => (
+                          <Link
+                            key={wt.label}
+                            href={wt.href}
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm ${
+                              pathname.startsWith(wt.href)
+                                ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                                : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
+                            }`}
+                          >
+                            {wt.icon}
+                            <span className="text-xs">{wt.label}</span>
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            }
 
             if (item.href === "/") {
               return (
-                <button
-                  key={item.label}
-                  onClick={() => onSelectAgent(null)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                    isActive
-                      ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
-                  }`}
+                <button key={item.label} onClick={() => onSelectAgent(null)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${isActive ? "bg-[var(--accent)]/20 text-[var(--accent)]" : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"}`}
                 >
-                  {item.icon}
-                  {!collapsed && <span>{item.label}</span>}
+                  {item.icon}{!collapsed && <span>{item.label}</span>}
                 </button>
               );
             }
 
             return (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                  isActive
-                    ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                    : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
-                }`}
+              <Link key={item.label} href={item.href!}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${isActive ? "bg-[var(--accent)]/20 text-[var(--accent)]" : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"}`}
               >
-                {item.icon}
-                {!collapsed && <span>{item.label}</span>}
+                {item.icon}{!collapsed && <span>{item.label}</span>}
               </Link>
             );
           })}
