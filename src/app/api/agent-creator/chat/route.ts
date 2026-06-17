@@ -53,7 +53,7 @@ The user's Agent OS has these deployment targets:
         "X-Title": "Agent OS — Agent Creator",
       },
       body: JSON.stringify({
-        model: "openrouter/openrouter/owl-alpha",
+        model: "openrouter/owl-alpha",
         messages,
         max_tokens: 2048,
         temperature: 0.7,

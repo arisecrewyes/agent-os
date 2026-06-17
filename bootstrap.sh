@@ -484,7 +484,7 @@ export async function POST(req: NextRequest) {
         "X-Title": "Agent OS",
       },
       body: JSON.stringify({
-        model: "openrouter/openrouter/owl-alpha",
+        model: "openrouter/owl-alpha",
         messages,
         max_tokens: 2048,
         temperature: 0.7,

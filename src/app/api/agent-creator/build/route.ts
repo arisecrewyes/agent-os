@@ -45,7 +45,7 @@ ${deployNotes ? `Notes: ${deployNotes}` : ""}`;
           "X-Title": "Agent OS — Agent Creator",
         },
         body: JSON.stringify({
-          model: "openrouter/openrouter/owl-alpha",
+          model: "openrouter/owl-alpha",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userMessage },

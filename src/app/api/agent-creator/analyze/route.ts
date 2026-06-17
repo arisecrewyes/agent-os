@@ -48,7 +48,7 @@ Keep it concise but thorough. Use markdown formatting.`;
         "X-Title": "Agent OS — Agent Creator",
       },
       body: JSON.stringify({
-        model: "openrouter/openrouter/owl-alpha",
+        model: "openrouter/owl-alpha",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage },
