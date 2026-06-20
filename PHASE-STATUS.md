@@ -1,6 +1,6 @@
 # Agent OS — Phase Completion Status
 
-**Last Updated:** June 17, 2026  
+**Last Updated:** June 20, 2026  
 **GitHub:** https://github.com/arisecrewyes/agent-os  
 **VPS:** Hostinger KVM 2 (31.220.62.81)  
 **Dashboard:** https://agentos.srv1121935.hstgr.cloud
@@ -55,15 +55,44 @@
 
 ---
 
-## Phase 3: Agent Installation & Testing — 🔲 NOT STARTED
+## Phase 3: Agent Installation & Testing — 🔐 IMAGES BUILT, AWAITING VPS DEPLOY
 
-### What needs to happen
+### What was done
 | # | Task | Status |
 |---|---|---|
-| 1 | Review & finalize VPS-SETUP.md Docker Compose YAML | 🔲 |
-| 2 | Build Docker images for all 15 agent projects | 🔲 |
-| 3 | Push images to GHCR | 🔲 |
-| 4 | Deploy projects on VPS (15 Docker Compose files) | 🔲 |
+| 1 | Review & finalize VPS-SETUP.md Docker Compose YAML | ✅ Already done |
+| 2 | Build Docker images for all 15 agent projects | ✅ 16/16 succeeded |
+| 3 | Push images to GHCR | ✅ All 16 confirmed on ghcr.io/arisecrewyes/* |
+
+### Docker Images on GHCR
+| Image | GitHub Source | Status |
+|---|---|---|
+| hermes-agent | NousResearch/hermes-agent | ✅ Built & pushed |
+| odysseus | pewdiepie-archdaemon/odysseus | ✅ Built & pushed |
+| bolt-diy | stackblitz-labs/bolt.diy (pnpm) | ✅ Built & pushed |
+| content-creator | averygan/reclip | ✅ Built & pushed |
+| memory-brain | moorcheh-ai/memanto | ✅ Built & pushed |
+| osint | sherlock-project/sherlock + GITRECON | ✅ Built & pushed |
+| skills | hardikpandya/stop-slop | ✅ Built & pushed |
+| conductor | Custom (Playwright) | ✅ Built & pushed |
+| hermes-voice | dograh-hq/dograh | ✅ Built & pushed |
+| goldie-stack | affaan-m/ECC | ✅ Built & pushed |
+| minimax-hermes | Custom (connector) | ✅ Built & pushed |
+| second-brain | pewdiepie-archdaemon/odysseus | ✅ Built & pushed |
+| dograh | dograh-hq/dograh | ✅ Built & pushed |
+| coldcontactxlsx | aasthas2022/ColdContactXLSX | ✅ Built & pushed |
+| agent-connector | Custom (Express.js router) | ✅ Built & pushed |
+
+### Files Created
+- `agent-projects/dockerfiles/*/Dockerfile` — 16 Dockerfiles
+- `agent-projects/compose/*/docker-compose.yml` — 16 compose files for VPS deploy
+- `agent-projects/dockerfiles/agent-connector/server.js` — Connector router
+- `.github/workflows/build-all-projects.yml` — CI/CD build pipeline
+
+### What needs to happen next (Step 4+)
+| # | Task | Status |
+|---|---|---|
+| 4 | Deploy projects on VPS (SSH, copy compose, docker compose up) | 🔲 |
 | 5 | Configure environment variables / API keys | 🔲 |
 | 6 | Start all projects & verify containers running | 🔲 |
 | 7 | Update dashboard chat API to route to tool containers | 🔲 |
@@ -102,13 +131,6 @@ root_default network (shared)
 ├── dograh             :8670  (🗣️ Dograh)
 └── coldcontactxlsx    :8680  (📧 ColdContactXLSX)
 ```
-
-### Shared Tools (deployed once, referenced by multiple agents)
-| Tool | Deployed In | Also Used By |
-|---|---|---|
-| Sherlock | `osint` | Content Creator |
-| Hermes | `hermes` | Hermes Voice, Goldie Stack, MiniMax |
-| Obsidian Vault | volume | Memory Engine, Second Brain |
 
 ---
 
@@ -149,11 +171,12 @@ root_default network (shared)
 
 When you resume, here's where to pick up:
 
-1. **Pull latest code on VPS:** `cd /root/agentos && git pull origin main`
-2. **Read VPS-SETUP.md** — has all 15 Docker Compose YAML files
-3. **Build & push Docker images** for each project to GHCR
-4. **Deploy on VPS** — create directories, copy YAMLs, `docker compose up -d`
-5. **Update dashboard chat API** to route agent messages to tool containers
-6. **Test everything** from the dashboard
-
-GitHub PAT: `github…YrXf` (expires in ~2 days from initial creation — may need renewal)
+1. **SSH to VPS:** `ssh root@31.220.62.81`
+2. **Pull latest code:** `cd /root/agentos && git pull origin main`
+3. **Create project directories:** `mkdir -p /root/agentos-projects/{hermes,odysseus,bolt-diy,...}`
+4. **Copy compose files** from `agent-projects/compose/*/docker-compose.yml`
+5. **Set up .env:** Copy `.env.example` and fill in API keys
+6. **Deploy all:** `for d in /root/agentos-projects/*/; do cd "$d" && docker compose up -d; done`
+7. **Verify:** `docker ps` — should see all containers
+8. **Update dashboard chat API** to route to tool containers via connector
+9. **Test everything** from the dashboard
