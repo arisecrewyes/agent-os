@@ -1,0 +1,49 @@
+services:
+  memory-engine:
+    image: ghcr.io/arisecrewyes/memory-brain:latest
+    container_name: memory-engine
+    restart: unless-stopped
+    expose:
+      - "8090"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OBSIDIAN_VAULT_PATH=/data/obsidian-vault
+    volumes:
+      - obsidian-vault:/data/obsidian-vault
+    networks:
+      - root_default
+
+  mem-memanto:
+    image: ghcr.io/arisecrewyes/memanto:latest
+    container_name: mem-memanto
+    restart: unless-stopped
+    expose:
+      - "8091"
+    networks:
+      - root_default
+
+  mem-turbovec:
+    image: ghcr.io/arisecrewyes/turbovec:latest
+    container_name: mem-turbovec
+    restart: unless-stopped
+    expose:
+      - "8093"
+    networks:
+      - root_default
+
+  mem-deer-flow:
+    image: ghcr.io/arisecrewyes/deer-flow:latest
+    container_name: mem-deer-flow
+    restart: unless-stopped
+    expose:
+      - "8094"
+    networks:
+      - root_default
+
+volumes:
+  obsidian-vault:
+
+networks:
+  root_default:
+    external: true

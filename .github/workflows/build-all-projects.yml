@@ -1,0 +1,145 @@
+name: Build & Push All Agent OS Projects
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-all-projects.yml'
+      - 'agent-projects/**'
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Specific project to build (or "all")'
+        required: false
+        default: 'all'
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: arisecrewyes
+
+jobs:
+  # ── DETERMINE WHAT TO BUILD ──
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.set-matrix.outputs.projects }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: set-matrix
+        run: |
+          if [ "${{ github.event.inputs.project }}" != "" ] && [ "${{ github.event.inputs.project }}" != "all" ]; then
+            echo "projects=[\"${{ github.event.inputs.project }}\"]" >> $GITHUB_OUTPUT
+          else
+            echo 'projects=["hermes-agent","odysseus","bolt-diy","content-creator","memory-brain","osint","skills","conductor","hermes-voice","goldie-stack","minimax-hermes","second-brain","dograh","coldcontactxlsx","agent-connector"]' >> $GITHUB_OUTPUT
+          fi
+
+  # ── BUILD & PUSH EACH PROJECT ──
+  build:
+    needs: matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.matrix.outputs.projects) }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout agent-os repo
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.OWNER }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── CLONE EXTERNAL REPO ──
+      - name: Clone ${{ matrix.project }} source
+        working-directory: /tmp
+        run: |
+          case "${{ matrix.project }}" in
+            "hermes-agent")
+              git clone --depth 1 https://github.com/NousResearch/hermes-agent.git source-repo
+              ;;
+            "odysseus")
+              git clone --depth 1 https://github.com/pewdiepie-archdaemon/odysseus.git source-repo
+              ;;
+            "bolt-diy")
+              git clone --depth 1 https://github.com/stackblitz-labs/bolt.diy.git source-repo
+              ;;
+            "content-creator")
+              git clone --depth 1 https://github.com/averygan/reclip.git source-repo
+              ;;
+            "memory-brain")
+              git clone --depth 1 https://github.com/moorcheh-ai/memanto.git source-repo
+              ;;
+            "osint")
+              mkdir -p source-repo
+              cd source-repo
+              git clone --depth 1 https://github.com/sherlock-project/sherlock.git sherlock
+              git clone --depth 1 https://github.com/techenthusiast167/GITRECON.git gitrecon
+              ;;
+            "skills")
+              git clone --depth 1 https://github.com/hardikpandya/stop-slop.git source-repo
+              ;;
+            "conductor")
+              mkdir -p source-repo
+              ;;
+            "hermes-voice")
+              git clone --depth 1 https://github.com/dograh-hq/dograh.git source-repo
+              ;;
+            "goldie-stack")
+              git clone --depth 1 https://github.com/affaan-m/ECC.git source-repo
+              ;;
+            "minimax-hermes")
+              mkdir -p source-repo
+              ;;
+            "second-brain")
+              git clone --depth 1 https://github.com/pewdiepie-archdaemon/odysseus.git source-repo
+              ;;
+            "dograh")
+              git clone --depth 1 https://github.com/dograh-hq/dograh.git source-repo
+              ;;
+            "coldcontactxlsx")
+              git clone --depth 1 https://github.com/aasthas2022/ColdContactXLSX.git source-repo
+              ;;
+            "agent-connector")
+              mkdir -p source-repo
+              ;;
+          esac
+
+      # ── COPY DOCKERFILE ──
+      - name: Copy Dockerfile
+        run: |
+          if [ -f "agent-projects/dockerfiles/${{ matrix.project }}/Dockerfile" ]; then
+            cp "agent-projects/dockerfiles/${{ matrix.project }}/Dockerfile" /tmp/source-repo/Dockerfile
+          elif [ ! -f "/tmp/source-repo/Dockerfile" ]; then
+            echo "WARNING: No Dockerfile for ${{ matrix.project }}, skipping"
+            echo "SKIP=true" >> $GITHUB_ENV
+          fi
+
+      # ── BUILD & PUSH ──
+      - name: Build & push ${{ matrix.project }}
+        if: env.SKIP != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: /tmp/source-repo
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.project }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.project }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+      - name: Verify push
+        if: env.SKIP != 'true'
+        run: |
+          echo "✅ ${{ matrix.project }} pushed to ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.project }}:latest"

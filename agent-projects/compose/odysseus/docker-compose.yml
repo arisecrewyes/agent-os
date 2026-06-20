@@ -1,0 +1,16 @@
+services:
+  odysseus:
+    image: ghcr.io/arisecrewyes/odysseus:latest
+    container_name: odysseus
+    restart: unless-stopped
+    expose:
+      - "7000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    networks:
+      - root_default
+
+networks:
+  root_default:
+    external: true

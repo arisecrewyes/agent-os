@@ -1,0 +1,16 @@
+services:
+  connector:
+    image: ghcr.io/arisecrewyes/agent-connector:latest
+    container_name: agentos-connector
+    restart: unless-stopped
+    expose:
+      - "8888"
+    environment:
+      - NODE_ENV=production
+      - PORT=8888
+    networks:
+      - root_default
+
+networks:
+  root_default:
+    external: true

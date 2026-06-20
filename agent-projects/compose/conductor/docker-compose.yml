@@ -1,0 +1,15 @@
+services:
+  conductor:
+    image: ghcr.io/arisecrewyes/conductor:latest
+    container_name: conductor
+    restart: unless-stopped
+    expose:
+      - "3002"
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - root_default
+
+networks:
+  root_default:
+    external: true

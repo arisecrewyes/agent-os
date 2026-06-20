@@ -1,0 +1,17 @@
+services:
+  hermes-voice:
+    image: ghcr.io/arisecrewyes/hermes-voice:latest
+    container_name: hermes-voice
+    restart: unless-stopped
+    expose:
+      - "8643"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - HERMES_URL=http://hermes:8642
+    networks:
+      - root_default
+
+networks:
+  root_default:
+    external: true

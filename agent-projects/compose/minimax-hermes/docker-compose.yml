@@ -1,0 +1,18 @@
+services:
+  minimax-hermes:
+    image: ghcr.io/arisecrewyes/minimax-hermes:latest
+    container_name: minimax-hermes
+    restart: unless-stopped
+    expose:
+      - "8660"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://localhost:11434}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+    networks:
+      - root_default
+
+networks:
+  root_default:
+    external: true

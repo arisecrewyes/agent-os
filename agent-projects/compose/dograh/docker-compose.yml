@@ -1,0 +1,16 @@
+services:
+  dograh:
+    image: ghcr.io/arisecrewyes/dograh:latest
+    container_name: dograh
+    restart: unless-stopped
+    expose:
+      - "8670"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DOGRAH_API_KEY=${DOGRAH_API_KEY:-}
+    networks:
+      - root_default
+
+networks:
+  root_default:
+    external: true

@@ -1,0 +1,20 @@
+services:
+  second-brain:
+    image: ghcr.io/arisecrewyes/second-brain:latest
+    container_name: second-brain
+    restart: unless-stopped
+    expose:
+      - "8095"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OBSIDIAN_VAULT_PATH=/data/obsidian-vault
+      - MEMORY_ENGINE_URL=http://memory-engine:8090
+    volumes:
+      - obsidian-vault:/data/obsidian-vault
+    networks:
+      - root_default
+
+networks:
+  root_default:
+    external: true

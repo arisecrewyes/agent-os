@@ -1,0 +1,16 @@
+services:
+  bolt-diy:
+    image: ghcr.io/arisecrewyes/bolt-diy:latest
+    container_name: bolt-diy
+    restart: unless-stopped
+    expose:
+      - "5173"
+    environment:
+      - NODE_ENV=production
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    networks:
+      - root_default
+
+networks:
+  root_default:
+    external: true

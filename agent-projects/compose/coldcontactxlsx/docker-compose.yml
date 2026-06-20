@@ -1,0 +1,15 @@
+services:
+  coldcontactxlsx:
+    image: ghcr.io/arisecrewyes/coldcontactxlsx:latest
+    container_name: coldcontactxlsx
+    restart: unless-stopped
+    expose:
+      - "8680"
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - root_default
+
+networks:
+  root_default:
+    external: true
