@@ -14,33 +14,6 @@ services:
     networks:
       - root_default
 
-  mem-memanto:
-    image: ghcr.io/arisecrewyes/memanto:latest
-    container_name: mem-memanto
-    restart: unless-stopped
-    expose:
-      - "8091"
-    networks:
-      - root_default
-
-  mem-turbovec:
-    image: ghcr.io/arisecrewyes/turbovec:latest
-    container_name: mem-turbovec
-    restart: unless-stopped
-    expose:
-      - "8093"
-    networks:
-      - root_default
-
-  mem-deer-flow:
-    image: ghcr.io/arisecrewyes/deer-flow:latest
-    container_name: mem-deer-flow
-    restart: unless-stopped
-    expose:
-      - "8094"
-    networks:
-      - root_default
-
 volumes:
   obsidian-vault:
 

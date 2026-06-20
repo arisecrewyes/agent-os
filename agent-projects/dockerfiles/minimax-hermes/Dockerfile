@@ -1,6 +1,5 @@
 # MiniMax M3 + Hermes — Free AI Agent Stack
 # Since MiniMax has no public repo, this is a lightweight connector
-# that proxies to Ollama or MiniMax API
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -9,8 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install uvicorn explicitly
+RUN pip install --no-cache-dir uvicorn fastapi httpx pydantic
+
 COPY <<'PYEOF' /app/api_server.py
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 import httpx, os
 
@@ -26,13 +28,10 @@ def health():
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    """Proxy to MiniMax or Ollama API"""
     api_url = os.getenv("MINIMAX_API_URL", "https://api.minimaxi.chat/v1")
     api_key = os.getenv("MINIMAX_API_KEY", "")
-    
     if not api_key:
-        return {"response": f"[MiniMax-Hermes] Echo: {req.message}", "note": "Set MINIMAX_API_KEY for real responses"}
-    
+        return {"response": f"[MiniMax-Hermes] Echo: {req.message}", "note": "Set MINIMAX_API_KEY"}
     try:
         with httpx.Client() as client:
             resp = client.post(

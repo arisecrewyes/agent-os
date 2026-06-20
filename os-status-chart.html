@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent OS — System Status Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e293b;
+    --border-bright: #334155;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --text-bright: #f8fafc;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.15);
+    --yellow: #eab308;
+    --yellow-dim: rgba(234,179,8,0.15);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.15);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,0.15);
+    --purple: #a855f7;
+    --purple-dim: rgba(168,85,247,0.15);
+    --cyan: #06b6d4;
+    --cyan-dim: rgba(6,182,212,0.15);
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--cyan), var(--blue), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .header .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .header .timestamp {
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  /* ── OS BOOT SCREEN ── */
+  .boot-bar-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+  }
+  .boot-bar-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+  }
+  .boot-bar-label span:first-child { color: var(--cyan); }
+  .boot-bar-label span:last-child { color: var(--text-dim); }
+  .boot-bar {
+    height: 12px;
+    background: var(--surface2);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .boot-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--green), var(--cyan));
+    width: 28%;
+    position: relative;
+    animation: pulse-bar 2s ease-in-out infinite;
+  }
+  @keyframes pulse-bar {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+  .boot-markers {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+  }
+  .boot-markers .active { color: var(--green); font-weight: 600; }
+  .boot-markers .pending { color: var(--yellow); }
+
+  /* ── PHASE GRID ── */
+  .phases-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .phase-card:hover { border-color: var(--border-bright); }
+  .phase-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .phase-card.done::before { background: var(--green); }
+  .phase-card.active::before { background: var(--yellow); animation: pulse-color 2s infinite; }
+  .phase-card.pending::before { background: var(--text-dim); }
+  @keyframes pulse-color {
+    0%, 100% { background: var(--yellow); }
+    50% { background: var(--orange); }
+  }
+  .phase-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+  .phase-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .phase-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    font-weight: 600;
+  }
+  .phase-status.done { background: var(--green-dim); color: var(--green); }
+  .phase-status.active { background: var(--yellow-dim); color: var(--yellow); }
+  .phase-status.pending { background: rgba(100,116,139,0.15); color: var(--text-dim); }
+  .phase-tasks {
+    margin-top: 12px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .phase-tasks .done-item { color: var(--green); }
+  .phase-tasks .pending-item { color: var(--text-dim); }
+
+  /* ── KERNEL / SYSTEM ARCH ── */
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kernel-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .kernel-layer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .kernel-layer h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--purple);
+    margin-bottom: 16px;
+  }
+
+  /* Process table */
+  .process-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+  }
+  .process-table th {
+    text-align: left;
+    padding: 6px 10px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .process-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(30,41,59,0.5);
+  }
+  .process-table tr:last-child td { border-bottom: none; }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+  }
+  .status-dot.running { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+  .status-dot.stopped { background: var(--red); }
+  .status-dot.sleeping { background: var(--yellow); }
+
+  /* ── HARDWARE LAYER ── */
+  .hw-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .hw-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .hw-card .icon { font-size: 1.5rem; margin-bottom: 8px; }
+  .hw-card .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .hw-card .value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+  .hw-card .sub {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .hw-card.highlight { border-color: var(--cyan); }
+  .hw-card.highlight .value { color: var(--cyan); }
+
+  /* ── FILESYSTEM TREE ── */
+  .fs-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  .fs-tree {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.8;
+  }
+  .fs-tree .dir { color: var(--blue); }
+  .fs-tree .file { color: var(--text); }
+  .fs-tree .exec { color: var(--green); }
+  .fs-tree .link { color: var(--purple); }
+  .fs-tree .dim { color: var(--text-dim); }
+  .fs-tree .size { color: var(--text-dim); margin-left: 8px; }
+  .fs-tree .status-ok { color: var(--green); margin-left: 6px; }
+  .fs-tree .status-missing { color: var(--red); margin-left: 6px; }
+
+  /* ── NETWORK MAP ── */
+  .network-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  .network-diagram {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    padding: 16px 0;
+  }
+  .net-node {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid;
+    text-align: center;
+    min-width: 90px;
+  }
+  .net-node.up {
+    background: var(--green-dim);
+    border-color: rgba(34,197,94,0.3);
+    color: var(--green);
+  }
+  .net-node.down {
+    background: var(--red-dim);
+    border-color: rgba(239,68,68,0.3);
+    color: var(--red);
+  }
+  .net-node.pending {
+    background: var(--yellow-dim);
+    border-color: rgba(234,179,8,0.3);
+    color: var(--yellow);
+  }
+  .net-node .port {
+    font-size: 0.55rem;
+    opacity: 0.7;
+    display: block;
+    margin-top: 2px;
+  }
+  .net-arrow {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── TOOL ANALYSIS ── */
+  .tool-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .tool-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .tool-stat-card h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+  .big-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .big-number.green { color: var(--green); }
+  .big-number.yellow { color: var(--yellow); }
+  .big-number.red { color: var(--red); }
+  .big-number.blue { color: var(--blue); }
+  .big-number.purple { color: var(--purple); }
+  .big-number.cyan { color: var(--cyan); }
+  .stat-label { font-size: 0.75rem; color: var(--text-dim); }
+
+  /* ── MEMORY MAP ── */
+  .memory-map {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  .mem-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .mem-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .mem-bar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    width: 140px;
+    text-align: right;
+    color: var(--text-dim);
+  }
+  .mem-bar-track {
+    flex: 1;
+    height: 20px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .mem-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #fff;
+    min-width: 30px;
+  }
+  .mem-bar-fill.green { background: linear-gradient(90deg, rgba(34,197,94,0.6), var(--green)); }
+  .mem-bar-fill.yellow { background: linear-gradient(90deg, rgba(234,179,8,0.6), var(--yellow)); }
+  .mem-bar-fill.red { background: linear-gradient(90deg, rgba(239,68,68,0.6), var(--red)); }
+  .mem-bar-fill.blue { background: linear-gradient(90deg, rgba(59,130,246,0.6), var(--blue)); }
+  .mem-bar-fill.purple { background: linear-gradient(90deg, rgba(168,85,247,0.6), var(--purple)); }
+  .mem-bar-fill.cyan { background: linear-gradient(90deg, rgba(6,182,212,0.6), var(--cyan)); }
+  .mem-bar-fill.orange { background: linear-gradient(90deg, rgba(249,115,22,0.6), var(--orange)); }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1200px) {
+    .phases-grid { grid-template-columns: repeat(3, 1fr); }
+    .kernel-container { grid-template-columns: 1fr; }
+    .hw-grid { grid-template-columns: repeat(2, 1fr); }
+    .tool-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .phases-grid { grid-template-columns: 1fr; }
+    .hw-grid { grid-template-columns: 1fr 1fr; }
+    .tool-stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<div class="header">
+  <h1>⚙️ Agent OS</h1>
+  <div class="subtitle">Operating System Status Dashboard — Side Quest Progress</div>
+  <div class="timestamp" id="ts"></div>
+</div>
+
+<!-- ═══════════════ BOOT PROGRESS BAR ═══════════════ -->
+<div class="boot-bar-container">
+  <div class="boot-bar-label">
+    <span>▶ BOOT SEQUENCE — agent-os kernel</span>
+    <span>28% LOADED</span>
+  </div>
+  <div class="boot-bar">
+    <div class="boot-bar-fill"></div>
+  </div>
+  <div class="boot-markers">
+    <span class="active">BOOT ✓</span>
+    <span class="active">INIT ✓</span>
+    <span class="active">PHASE 1 ✓</span>
+    <span class="active">PHASE 2 ✓</span>
+    <span class="pending">PHASE 3 ⟳</span>
+    <span>PHASE 4</span>
+    <span>PHASE 5</span>
+    <span>LAUNCH</span>
+  </div>
+</div>
+
+<!-- ═══════════════ PHASE CARDS ═══════════════ -->
+<div class="phases-grid">
+  <div class="phase-card done">
+    <div class="phase-num">PHASE 01</div>
+    <div class="phase-title">Core Dashboard & Features</div>
+    <span class="phase-status done">● COMPLETE</span>
+    <div class="phase-tasks">
+      <span class="done-item">✓</span> Mission Control dashboard<br>
+      <span class="done-item">✓</span> 7 Skool posts/routes<br>
+      <span class="done-item">✓</span> Agent-to-agent comms<br>
+      <span class="done-item">✓</span> Auth + 2FA system<br>
+      <span class="done-item">✓</span> Traefik SSL<br>
+      <span class="done-item">✓</span> 21 commits · 30 routes
+    </div>
+  </div>
+  <div class="phase-card done">
+    <div class="phase-num">PHASE 02</div>
+    <div class="phase-title">VPS Deployment & Config</div>
+    <span class="phase-status done">● COMPLETE</span>
+    <div class="phase-tasks">
+      <span class="done-item">✓</span> Docker on Hostinger VPS<br>
+      <span class="done-item">✓</span> Traefik SSL certs<br>
+      <span class="done-item">✓</span> OpenRouter API key<br>
+      <span class="done-item">✓</span> All 17 agents responding<br>
+      <span class="done-item">✓</span> Dashboard live via SSL
+    </div>
+  </div>
+  <div class="phase-card active">
+    <div class="phase-num">PHASE 03</div>
+    <div class="phase-title">Agent Installation & Testing</div>
+    <span class="phase-status active">◐ IN PROGRESS</span>
+    <div class="phase-tasks">
+      <span class="pending-item">⟳</span> Build 15 Docker images<br>
+      <span class="pending-item">⟳</span> Push to GHCR<br>
+      <span class="pending-item">⟳</span> Deploy on VPS<br>
+      <span class="pending-item">⟳</span> Configure API keys<br>
+      <span class="pending-item">⟳</span> Test inter-agent comms<br>
+      <span class="pending-item">○</span> 2FA testing
+    </div>
+  </div>
+  <div class="phase-card pending">
+    <div class="phase-num">PHASE 04</div>
+    <div class="phase-title">Content & Media Pipeline</div>
+    <span class="phase-status pending">○ NOT STARTED</span>
+    <div class="phase-tasks">
+      <span class="pending-item">○</span> Voice platform config<br>
+      <span class="pending-item">○</span> Video gen pipeline<br>
+      <span class="pending-item">○</span> Social scraping tools<br>
+      <span class="pending-item">○</span> OSINT tool testing
+    </div>
+  </div>
+  <div class="phase-card pending">
+    <div class="phase-num">PHASE 05</div>
+    <div class="phase-title">Launch & Documentation</div>
+    <span class="phase-status pending">○ NOT STARTED</span>
+    <div class="phase-tasks">
+      <span class="pending-item">○</span> Security audit<br>
+      <span class="pending-item">○</span> User documentation<br>
+      <span class="pending-item">○</span> Sales materials<br>
+      <span class="pending-item">○</span> 🚀 LAUNCH
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ HARDWARE LAYER ═══════════════ -->
+<div class="section-title">┌─ Hardware Layer ─────────────────────────────────────┐</div>
+<div class="hw-grid">
+  <div class="hw-card highlight">
+    <div class="icon">🖥️</div>
+    <div class="label">Host</div>
+    <div class="value">Hostinger</div>
+    <div class="sub">KVM 2 VPS</div>
+  </div>
+  <div class="hw-card">
+    <div class="icon">🌐</div>
+    <div class="label">IP Address</div>
+    <div class="value" style="font-size:0.85rem;">31.220.62.81</div>
+    <div class="sub">Public IPv4</div>
+  </div>
+  <div class="hw-card">
+    <div class="icon">🐳</div>
+    <div class="label">Containers</div>
+    <div class="value">17</div>
+    <div class="sub">Docker agents running</div>
+  </div>
+  <div class="hw-card">
+    <div class="icon">📦</div>
+    <div class="label">Planned</div>
+    <div class="value">27</div>
+    <div class="sub">Total containers</div>
+  </div>
+  <div class="hw-card">
+    <div class="icon">🔧</div>
+    <div class="label">Tools Analyzed</div>
+    <div class="value">463</div>
+    <div class="sub">Unique tools</div>
+  </div>
+  <div class="hw-card">
+    <div class="icon">📂</div>
+    <div class="label">Docker Projects</div>
+    <div class="value">15</div>
+    <div class="sub">Compose files</div>
+  </div>
+  <div class="hw-card">
+    <div class="icon">🔗</div>
+    <div class="label">Shared Tools</div>
+    <div class="value">3</div>
+    <div class="sub">Cross-agent</div>
+  </div>
+  <div class="hw-card">
+    <div class="icon">📡</div>
+    <div class="label">Network</div>
+    <div class="value">root_default</div>
+    <div class="sub">Docker bridge</div>
+  </div>
+</div>
+
+<!-- ═══════════════ KERNEL / PROCESS TABLE ═══════════════ -->
+<div class="section-title">┌─ Kernel Layer — System Processes ────────────────────┐</div>
+<div class="kernel-container">
+  <div class="kernel-layer">
+    <h3>▶ Core Services (Running)</h3>
+    <table class="process-table">
+      <thead><tr><th>PID</th><th>Service</th><th>Port</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>0x001</td><td>agentos-dashboard</td><td>3000</td><td><span class="status-dot running"></span>running</td></tr>
+        <tr><td>0x002</td><td>traefik</td><td>443</td><td><span class="status-dot running"></span>running</td></tr>
+        <tr><td>0x003</td><td>hermes-agent</td><td>8642</td><td><span class="status-dot running"></span>running</td></tr>
+        <tr><td>0x004</td><td>odysseus</td><td>7000</td><td><span class="status-dot running"></span>running</td></tr>
+        <tr><td>0x005</td><td>bolt-diy</td><td>5173</td><td><span class="status-dot running"></span>running</td></tr>
+        <tr><td>0x006</td><td>content-creator</td><td>8080</td><td><span class="status-dot running"></span>running</td></tr>
+        <tr><td>0x007</td><td>memory-engine</td><td>8090</td><td><span class="status-dot running"></span>running</td></tr>
+        <tr><td>0x008</td><td>osint-sherlock</td><td>9090</td><td><span class="status-dot running"></span>running</td></tr>
+        <tr><td>0x009</td><td>skills-harness</td><td>9100</td><td><span class="status-dot running"></span>running</td></tr>
+        <tr><td>0x00A</td><td>conductor</td><td>3002</td><td><span class="status-dot running"></span>running</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="kernel-layer">
+    <h3>▶ Pending Services (Not Started)</h3>
+    <table class="process-table">
+      <thead><tr><th>PID</th><th>Service</th><th>Port</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>0x00B</td><td>agent-creator</td><td>3001</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x00C</td><td>hermes-voice</td><td>8643</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x00D</td><td>goldie-hermes-mcp</td><td>8650</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x00E</td><td>goldie-codex</td><td>8651</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x00F</td><td>minimax-hermes</td><td>8660</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x010</td><td>second-brain</td><td>8095</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x011</td><td>dograh</td><td>8670</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x012</td><td>coldcontactxlsx</td><td>8680</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x013</td><td>mem-memanto</td><td>8091</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x014</td><td>mem-quant-mind</td><td>8092</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x015</td><td>mem-turbovec</td><td>8093</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x016</td><td>mem-deer-flow</td><td>8094</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x017</td><td>osint-gitrecon</td><td>9091</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x018</td><td>osint-google-dorking</td><td>9092</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x019</td><td>skills-stop-slop</td><td>9101</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x01A</td><td>skills-skillopt</td><td>9102</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x01B</td><td>skills-humanizer</td><td>9103</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x01C</td><td>content-pake</td><td>8083</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x01D</td><td>content-hyperframes</td><td>8084</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+        <tr><td>0x01E</td><td>agentos-connector</td><td>8888</td><td><span class="status-dot sleeping"></span>not built</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ TOOL ANALYSIS STATS ═══════════════ -->
+<div class="section-title">┌─ Tool Analysis — /sys/devices/tools ──────────────────┐</div>
+<div class="tool-stats">
+  <div class="tool-stat-card">
+    <h4>Total Tools Scanned</h4>
+    <div class="big-number blue">716</div>
+    <div class="stat-label">raw entries in spreadsheet</div>
+  </div>
+  <div class="tool-stat-card">
+    <h4>Unique Tools</h4>
+    <div class="big-number cyan">463</div>
+    <div class="stat-label">after dedup (253 removed)</div>
+  </div>
+  <div class="tool-stat-card">
+    <h4>Matched to Agents</h4>
+    <div class="big-number green">83</div>
+    <div class="stat-label">mapped to existing agents</div>
+  </div>
+  <div class="tool-stat-card">
+    <h4>New Tools Found</h4>
+    <div class="big-number yellow">380</div>
+    <div class="stat-label">not in original plan</div>
+  </div>
+  <div class="tool-stat-card">
+    <h4>Need Building</h4>
+    <div class="big-number red">333</div>
+    <div class="stat-label">71.9% — no pre-built images</div>
+  </div>
+  <div class="tool-stat-card">
+    <h4>Non-GitHub URLs</h4>
+    <div class="big-number purple">130</div>
+    <div class="stat-label">SaaS / external services</div>
+  </div>
+</div>
+
+<!-- ═══════════════ MEMORY MAP ═══════════════ -->
+<div class="section-title">┌─ Memory Map — /proc/meminfo ─────────────────────────┐</div>
+<div class="memory-map">
+  <div class="mem-bars">
+    <div class="mem-bar-row">
+      <div class="mem-bar-label">Phase 1 (Dashboard)</div>
+      <div class="mem-bar-track">
+        <div class="mem-bar-fill green" style="width:100%;">100% ✓</div>
+      </div>
+    </div>
+    <div class="mem-bar-row">
+      <div class="mem-bar-label">Phase 2 (Deploy)</div>
+      <div class="mem-bar-track">
+        <div class="mem-bar-fill green" style="width:100%;">100% ✓</div>
+      </div>
+    </div>
+    <div class="mem-bar-row">
+      <div class="mem-bar-label">Phase 3 (Install)</div>
+      <div class="mem-bar-track">
+        <div class="mem-bar-fill yellow" style="width:15%;">~15% ⟳</div>
+      </div>
+    </div>
+    <div class="mem-bar-row">
+      <div class="mem-bar-label">Phase 4 (Content)</div>
+      <div class="mem-bar-track">
+        <div class="mem-bar-fill red" style="width:3%;">0% ○</div>
+      </div>
+    </div>
+    <div class="mem-bar-row">
+      <div class="mem-bar-label">Phase 5 (Launch)</div>
+      <div class="mem-bar-track">
+        <div class="mem-bar-fill red" style="width:3%;">0% ○</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ FILESYSTEM TREE ═══════════════ -->
+<div class="section-title">┌─ Filesystem — /root/agentos ─────────────────────────┐</div>
+<div class="fs-container">
+  <div class="fs-tree">
+    <span class="dir">/root/agentos/</span> &nbsp;<span class="dim">— Docker Compose root</span><br>
+    ├── <span class="dir">dashboard/</span> &nbsp;<span class="status-ok">✓ deployed</span> &nbsp;<span class="size">agentos.srv1121935.hstgr.cloud</span><br>
+    ├── <span class="dir">connector/</span> &nbsp;<span class="status-missing">✗ not built</span> &nbsp;<span class="size">:8888</span><br>
+    ├── <span class="dir">agent-creator/</span> &nbsp;<span class="status-missing">✗ not built</span> &nbsp;<span class="size">:3001</span><br>
+    ├── <span class="dir">hermes/</span> &nbsp;<span class="status-ok">✓ deployed</span> &nbsp;<span class="size">:8642</span><br>
+    ├── <span class="dir">odysseus/</span> &nbsp;<span class="status-ok">✓ deployed</span> &nbsp;<span class="size">:7000</span><br>
+    ├── <span class="dir">bolt-diy/</span> &nbsp;<span class="status-ok">✓ deployed</span> &nbsp;<span class="size">:5173</span><br>
+    ├── <span class="dir">content-creator/</span> &nbsp;<span class="status-ok">✓ deployed</span> &nbsp;<span class="size">:8080</span><br>
+    │&nbsp;&nbsp; ├── <span class="dir">content-pake/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:8083</span><br>
+    │&nbsp;&nbsp; └── <span class="dir">content-hyperframes/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:8084</span><br>
+    ├── <span class="dir">memory-engine/</span> &nbsp;<span class="status-ok">✓ deployed</span> &nbsp;<span class="size">:8090</span><br>
+    │&nbsp;&nbsp; ├── <span class="dir">mem-memanto/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:8091</span><br>
+    │&nbsp;&nbsp; ├── <span class="dir">mem-quant-mind/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:8092</span><br>
+    │&nbsp;&nbsp; ├── <span class="dir">mem-turbovec/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:8093</span><br>
+    │&nbsp;&nbsp; └── <span class="dir">mem-deer-flow/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:8094</span><br>
+    ├── <span class="dir">osint/</span> &nbsp;<span class="status-ok">✓ sherlock deployed</span> &nbsp;<span class="size">:9090</span><br>
+    │&nbsp;&nbsp; ├── <span class="dir">osint-gitrecon/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:9091</span><br>
+    │&nbsp;&nbsp; └── <span class="dir">osint-google-dorking/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:9092</span><br>
+    ├── <span class="dir">skills/</span> &nbsp;<span class="status-ok">✓ harness deployed</span> &nbsp;<span class="size">:9100</span><br>
+    │&nbsp;&nbsp; ├── <span class="dir">skills-stop-slop/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:9101</span><br>
+    │&nbsp;&nbsp; ├── <span class="dir">skills-skillopt/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:9102</span><br>
+    │&nbsp;&nbsp; └── <span class="dir">skills-humanizer/</span> &nbsp;<span class="status-missing">✗ shared tool</span> &nbsp;<span class="size">:9103</span><br>
+    ├── <span class="dir">conductor/</span> &nbsp;<span class="status-ok">✓ deployed</span> &nbsp;<span class="size">:3002</span><br>
+    ├── <span class="dir">hermes-voice/</span> &nbsp;<span class="status-missing">✗ not built</span> &nbsp;<span class="size">:8643</span><br>
+    ├── <span class="dir">goldie-stack/</span> &nbsp;<span class="status-missing">✗ not built</span> &nbsp;<span class="size">:8650-8651</span><br>
+    ├── <span class="dir">minimax-hermes/</span> &nbsp;<span class="status-missing">✗ not built</span> &nbsp;<span class="size">:8660</span><br>
+    ├── <span class="dir">second-brain/</span> &nbsp;<span class="status-missing">✗ not built</span> &nbsp;<span class="size">:8095</span><br>
+    ├── <span class="dir">dograh/</span> &nbsp;<span class="status-missing">✗ not built</span> &nbsp;<span class="size">:8670</span><br>
+    └── <span class="dir">coldcontactxlsx/</span> &nbsp;<span class="status-missing">✗ not built</span> &nbsp;<span class="size">:8680</span><br>
+    <br>
+    <span class="dir">/root/agentos-dashboard/</span> &nbsp;<span class="dim">— GitHub repo (Next.js)</span><br>
+    ├── <span class="exec">PHASE-STATUS.md</span> &nbsp;<span class="size">last: Jun 17</span><br>
+    ├── <span class="exec">VPS-SETUP.md</span> &nbsp;<span class="size">15 compose YAMLs</span><br>
+    ├── <span class="exec">Agent_OS_Tool_Analysis.md</span> &nbsp;<span class="size">463 tools</span><br>
+    ├── <span class="file">PHASE3-*-YAML.md</span> &nbsp;<span class="size">4 files</span><br>
+    ├── <span class="file">PHASE3-MAIN-CONNECTOR.md</span> &nbsp;<span class="size">connector spec</span><br>
+    └── <span class="dir">src/</span> &nbsp;<span class="size">Next.js dashboard</span>
+  </div>
+</div>
+
+<!-- ═══════════════ NETWORK MAP ═══════════════ -->
+<div class="section-title">┌─ Network Map — root_default bridge ──────────────────┐</div>
+<div class="network-container">
+  <div style="text-align:center; margin-bottom:16px; font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--text-dim);">
+    [Internet] ──443──▶ [Traefik] ──▶ [Agent OS Dashboard :3000] ──▶ [Connector :8888] ──▶ [Tool Containers]
+  </div>
+  <div class="network-diagram">
+    <div class="net-node up">traefik<br><span class="port">:443</span></div>
+    <div class="net-arrow">──▶</div>
+    <div class="net-node up">dashboard<br><span class="port">:3000</span></div>
+    <div class="net-arrow">──▶</div>
+    <div class="net-node pending">connector<br><span class="port">:8888</span></div>
+    <div class="net-arrow">──▶</div>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; max-width:600px;">
+      <div class="net-node up">hermes<br><span class="port">:8642</span></div>
+      <div class="net-node up">odysseus<br><span class="port">:7000</span></div>
+      <div class="net-node up">bolt-diy<br><span class="port">:5173</span></div>
+      <div class="net-node up">content-cr.<br><span class="port">:8080</span></div>
+      <div class="net-node up">memory-en.<br><span class="port">:8090</span></div>
+      <div class="net-node up">sherlock<br><span class="port">:9090</span></div>
+      <div class="net-node up">skills-har.<br><span class="port">:9100</span></div>
+      <div class="net-node up">conductor<br><span class="port">:3002</span></div>
+      <div class="net-node pending">agent-cr.<br><span class="port">:3001</span></div>
+      <div class="net-node pending">hermes-vc.<br><span class="port">:8643</span></div>
+      <div class="net-node pending">goldie-mcp<br><span class="port">:8650</span></div>
+      <div class="net-node pending">goldie-cod<br><span class="port">:8651</span></div>
+      <div class="net-node pending">minimax<br><span class="port">:8660</span></div>
+      <div class="net-node pending">2nd-brain<br><span class="port">:8095</span></div>
+      <div class="net-node pending">dograh<br><span class="port">:8670</span></div>
+      <div class="net-node pending">cold-xlsx<br><span class="port">:8680</span></div>
+      <div class="net-node pending">memanto<br><span class="port">:8091</span></div>
+      <div class="net-node pending">quant-mind<br><span class="port">:8092</span></div>
+      <div class="net-node pending">turbovec<br><span class="port">:8093</span></div>
+      <div class="net-node pending">deer-flow<br><span class="port">:8094</span></div>
+      <div class="net-node pending">gitrecon<br><span class="port">:9091</span></div>
+      <div class="net-node pending">g-dorking<br><span class="port">:9092</span></div>
+      <div class="net-node pending">stop-slop<br><span class="port">:9101</span></div>
+      <div class="net-node pending">skillopt<br><span class="port">:9102</span></div>
+      <div class="net-node pending">humanizer<br><span class="port">:9103</span></div>
+      <div class="net-node pending">pake<br><span class="port">:8083</span></div>
+      <div class="net-node pending">hyperframes<br><span class="port">:8084</span></div>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:0.65rem;">
+    <span style="color:var(--green);">● UP</span> &nbsp; 9 running &nbsp;｜&nbsp; <span style="color:var(--yellow);">● PENDING</span> &nbsp; 19 not built &nbsp;｜&nbsp; <span style="color:var(--red);">● DOWN</span> &nbsp; 0 failed
+  </div>
+</div>
+
+<!-- ═══════════════ OS LAYER DIAGRAM ═══════════════ -->
+<div class="section-title">┌─ OS Layer Stack — Agent OS Architecture ─────────────┐</div>
+<div class="fs-container">
+  <div style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; line-height:2;">
+    <div style="background:var(--blue-dim); border:1px solid rgba(59,130,246,0.3); border-radius:6px; padding:8px 16px; margin-bottom:4px;">
+      <span style="color:var(--blue);">╔══════════════════════════════════════════════════╗</span><br>
+      <span style="color:var(--blue);">║</span> <span style="color:var(--text-bright); font-weight:700;">USER SPACE</span> — Dashboard UI · Chat · Settings <span style="color:var(--blue);">║</span><br>
+      <span style="color:var(--blue);">║</span> Next.js · React · Tailwind · Auth · 2FA <span style="color:var(--green);">✓ LIVE</span> <span style="color:var(--blue);">║</span><br>
+      <span style="color:var(--blue);">╠══════════════════════════════════════════════════╣</span><br>
+      <span style="color:var(--blue);">║</span> <span style="color:var(--text-bright); font-weight:700;">API LAYER</span> · /api/chat · /api/agents · /api/auth <span style="color:var(--blue);">║</span><br>
+      <span style="color:var(--blue);">║</span> 30 routes · REST · OpenRouter bridge <span style="color:var(--green);">✓ LIVE</span> <span style="color:var(--blue);">║</span><br>
+      <span style="color:var(--blue);">╠══════════════════════════════════════════════════╣</span><br>
+      <span style="color:var(--blue);">║</span> <span style="color:var(--text-bright); font-weight:700;">CONNECTOR</span> — Tool Router ("Vending Machine") <span style="color:var(--blue);">║</span><br>
+      <span style="color:var(--blue);">║</span> Express.js · Port 8888 · Registry: 22 agents <span style="color:var(--yellow);">⟳ PLANNED</span> <span style="color:var(--blue);">║</span><br>
+      <span style="color:var(--blue);">╠══════════════════════════════════════════════════╣</span><br>
+      <span style="color:var(--blue);">║</span> <span style="color:var(--text-bright); font-weight:700;">KERNEL</span> — Docker Engine · root_default net <span style="color:var(--blue);">║</span><br>
+      <span style="color:var(--blue);">║</span> 27 containers planned · 9 running · 18 pending <span style="color:var(--yellow);">⟳ PARTIAL</span> <span style="color:var(--blue);">║</span><br>
+      <span style="color:var(--blue);">╠══════════════════════════════════════════════════╣</span><br>
+      <span style="color:var(--blue);">║</span> <span style="color:var(--text-bright); font-weight:700;">HARDWARE</span> — Hostinger KVM 2 · Ubuntu · Docker <span style="color:var(--blue);">║</span><br>
+      <span style="color:var(--blue);">║</span> 31.220.62.81 · Traefik · SSL · GHCR <span style="color:var(--green);">✓ LIVE</span> <span style="color:var(--blue);">║</span><br>
+      <span style="color:var(--blue);">╚══════════════════════════════════════════════════╝</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<div class="footer">
+  Agent OS v0.3.0-alpha · Phase 3 In Progress · 28% boot complete<br>
+  GitHub: github.com/arisecrewyes/agent-os · Dashboard: agentos.srv1121935.hstgr.cloud<br>
+  Generated by OWL · 2026-06-20
+</div>
+
+<script>
+  document.getElementById('ts').textContent = 'Generated: ' + new Date().toISOString().replace('T',' ').slice(0,19) + ' UTC';
+</script>
+</body>
+</html>

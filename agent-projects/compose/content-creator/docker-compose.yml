@@ -8,25 +8,6 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - SHERLOCK_URL=http://osint-sherlock:9090
-    networks:
-      - root_default
-
-  content-pake:
-    image: ghcr.io/arisecrewyes/pake:latest
-    container_name: content-pake
-    restart: unless-stopped
-    expose:
-      - "8083"
-    networks:
-      - root_default
-
-  content-hyperframes:
-    image: ghcr.io/arisecrewyes/hyperframes:latest
-    container_name: content-hyperframes
-    restart: unless-stopped
-    expose:
-      - "8084"
     networks:
       - root_default
 

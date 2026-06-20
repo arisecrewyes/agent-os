@@ -11,19 +11,6 @@ services:
     networks:
       - root_default
 
-  goldie-codex:
-    image: ghcr.io/arisecrewyes/codex:latest
-    container_name: goldie-codex
-    restart: unless-stopped
-    expose:
-      - "8651"
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
-      - HERMES_MCP_URL=http://goldie-hermes-mcp:8650
-    networks:
-      - root_default
-
 networks:
   root_default:
     external: true

@@ -10,24 +10,6 @@ services:
     networks:
       - root_default
 
-  skills-stop-slop:
-    image: ghcr.io/arisecrewyes/stop-slop:latest
-    container_name: skills-stop-slop
-    restart: unless-stopped
-    expose:
-      - "9101"
-    networks:
-      - root_default
-
-  skills-humanizer:
-    image: ghcr.io/arisecrewyes/humanizer:latest
-    container_name: skills-humanizer
-    restart: unless-stopped
-    expose:
-      - "9103"
-    networks:
-      - root_default
-
 networks:
   root_default:
     external: true
