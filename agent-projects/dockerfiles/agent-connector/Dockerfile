@@ -4,9 +4,8 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy package files from the agent-projects directory
-COPY agent-projects/dockerfiles/agent-connector/package.json package.json
-COPY agent-projects/dockerfiles/agent-connector/server.js server.js
+# package.json and server.js are copied by the workflow into the build context
+COPY package.json server.js ./
 
 RUN npm install --only=production
 
