@@ -17,4 +17,10 @@ EXPOSE 8090
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8090
 
+
+
+
+# Copy entry point
+COPY main.py /app/main.py
+
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8090"]

@@ -71,4 +71,8 @@ EXPOSE 9100
 ENV PYTHONUNBUFFERED=1
 ENV PORT=9100
 
+
+# Copy entry point
+COPY main.py /app/main.py
+
 CMD ["python", "-m", "uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "9100"]
