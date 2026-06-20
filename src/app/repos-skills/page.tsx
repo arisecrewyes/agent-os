@@ -8,7 +8,7 @@ import {
   Database, Bot, FileText, Check, ChevronRight, ChevronDown,
   CheckCircle2, AlertCircle, Clock, Layers, RefreshCw, ArrowRight,
   Shield, Wrench, Star, Globe, Cpu, Users, Heart, Monitor, Code,
-  Terminal, ExternalLink, Search, FileSearch, Video
+  Terminal, ExternalLink, Search, FileSearch, Video, Lock
 } from "lucide-react";
 
 function PageNav() {
@@ -29,6 +29,7 @@ function PageNav() {
     { label: "Content Repos", icon: <Video size={14} />, href: "/repos-content" },
     { label: "Memory Repos", icon: <Brain size={14} />, href: "/repos-memory" },
     { label: "Skills Repos", icon: <Wrench size={14} />, href: "/repos-skills" },
+    { label: "Security & OSINT", icon: <Lock size={14} />, href: "/repos-security" },
     { label: "Goals", icon: <Target size={14} />, href: "/goals" },
     { label: "Journal", icon: <BookOpen size={14} />, href: "/journal" },
     { label: "Settings", icon: <Settings size={14} />, href: "/settings" },
@@ -58,6 +59,13 @@ const REPOS = [
   { name: "Skill_Seekers", url: "https://github.com/yusufkaraaslan/Skill_Seekers", about: "Convert documentation websites, GitHub repositories, and PDFs into Claude AI skills with automatic conflict detection.", tags: ["skills", "conversion", "documentation"], appUrl: "https://skillseekersweb.com/" },
   { name: "Hermes Skill Hub", url: "https://hermes-agent.nousresearch.com/docs/skills/", about: "Hermes Agent Skill Hub \u2014 official skills directory for Hermes Agent.", tags: ["hermes", "skills", "official"] },
   { name: "humanizer", url: "https://github.com/blader/humanizer", about: "Claude Code skill that removes signs of AI-generated writing from text.", tags: ["writing", "ai-detection", "claude", "skill"] },
+  { name: "Minimalist Entrepreneur Skills", url: "https://github.com/slavingia/skills", about: "Claude Code skills based on The Minimalist Entrepreneur. 10 skills covering community, validation, MVP, processize, first customers, pricing, marketing plan, sustainable growth, and company values.", tags: ["claude", "skill", "business", "entrepreneur"] },
+  { name: "governor", url: "https://github.com/0xhimanshu/governor", about: "Claude Code usage governor: compact professional output, context slimming, tool-output filtering, telemetry, and drift guardrails. Keeps long sessions efficient without making the model dumber.", tags: ["claude", "context", "optimization", "plugin"] },
+  { name: "claude-smart", url: "https://github.com/ReflexioAI/claude-smart", about: "A Claude Code plugin that makes Claude Code self-improve \u2014 learning from your corrections, not just remembering them. ~3x better at turning corrections into rules.", tags: ["claude", "plugin", "self-improve", "learning"] },
+  { name: "geo-seo-claude", url: "https://github.com/zubair-trabzada/geo-seo-claude", about: "GEO-first SEO skill for Claude Code. AI search optimization with citability scoring, AI crawler analysis, brand authority, schema markup, platform-specific optimization, and PDF reports.", tags: ["seo", "claude", "skill", "ai-search", "marketing"] },
+  { name: "awesome-llm-apps", url: "https://github.com/Shubhamsaboo/awesome-llm-apps", about: "100+ AI Agent & RAG apps you can actually run \u2014 clone, customize, ship. Covers multi-agent teams, MCP agents, voice agents, agent skills, and fine-tuning. Works with Claude, Gemini, OpenAI, xAI, Qwen, Llama.", tags: ["llm", "agents", "rag", "templates", "cookbook"], appUrl: "https://www.theunwindai.com" },
+  { name: "hetty", url: "https://github.com/dstotijn/hetty", about: "An HTTP toolkit for security research. Open-source alternative to Burp Suite Pro with MITM proxy, HTTP client, intercept, scope support, and web-based admin interface.", tags: ["security", "http", "proxy", "research", "pentest"], appUrl: "https://hetty.xyz" },
+  { name: "OpenAlice", url: "https://github.com/TraderAlice/OpenAlice", about: "Your one-person Wall Street. An AI trading agent covering equities, crypto, commodities, forex, and macro \u2014 from research through position entry, ongoing management, to exit. Full-control with Trading-as-Git.", tags: ["trading", "ai", "agent", "finance", "crypto"], appUrl: "https://openalice.ai" },
 ];
 
 const TAG_COLORS: Record<string, string> = {
@@ -71,6 +79,13 @@ const TAG_COLORS: Record<string, string> = {
   "books": "#fdcb6e", "claude": "#6c5ce7", "pdf": "#0984e3",
   "conversion": "#00b894", "documentation": "#e056fd",
   "hermes": "#6c5ce7", "official": "#0984e3",
+  "business": "#fdcb6e", "entrepreneur": "#e17055",
+  "context": "#0984e3", "plugin": "#6c5ce7",
+  "self-improve": "#e056fd", "learning": "#fdcb6e",
+  "seo": "#00b894", "ai-search": "#6c5ce7", "marketing": "#e056fd",
+  "agents": "#0984e3", "rag": "#fdcb6e", "templates": "#6c5ce7", "cookbook": "#e17055",
+  "http": "#0984e3", "proxy": "#fdcb6e", "research": "#6c5ce7", "pentest": "#e056fd",
+  "trading": "#fdcb6e", "ai": "#6c5ce7", "finance": "#0984e3", "crypto": "#e056fd",
 };
 
 export default function ReposSkillsPage() {

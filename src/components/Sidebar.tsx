@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Bot, Target, BookOpen, Settings,
   ChevronLeft, ChevronRight, Plus, Trash2, Pin, PinOff,
-  ChevronUp, ChevronDown, GripVertical, Brain, Zap, Rocket, Layers, Database, Users, Heart, Cpu, Sparkles, MessageSquare, Globe, Monitor, Phone, Volume2, Code, Video, Wrench
+  ChevronUp, ChevronDown, GripVertical, Brain, Zap, Rocket, Layers, Database, Users, Heart, Cpu, Sparkles, MessageSquare, Globe, Monitor, Phone, Volume2, Code, Video, Wrench, Lock
 } from "lucide-react";
 import { useState } from "react";
 import StatusBadge from "./StatusBadge";
@@ -68,6 +68,7 @@ export default function Sidebar({
     { label: "Conductor Stack", icon: <Users size={16} />, href: "/conductor-stack" },
     { label: "Automation", icon: <Zap size={16} />, href: "/automation" },
     { label: "Goldie Stack", icon: <Layers size={16} />, href: "/goldie-stack" },
+    { label: "Security & OSINT", icon: <Lock size={16} />, href: "/repos-security" },
   ];
 
   const navItems = [
@@ -76,6 +77,7 @@ export default function Sidebar({
     { label: "Goals", icon: <Target size={20} />, href: "/goals" },
     { label: "Journal", icon: <BookOpen size={20} />, href: "/journal" },
     { label: "Settings", icon: <Settings size={20} />, href: "/settings" },
+    { label: "Security & OSINT", icon: <Lock size={20} />, href: "/repos-security" },
   ];
 
   // Split agents into built-in and custom

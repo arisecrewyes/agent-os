@@ -9,7 +9,7 @@ import {
   CheckCircle2, AlertCircle, Clock, Layers, RefreshCw, ArrowRight,
   Shield, Wrench, Star, Globe, Cpu, Users, Heart, Monitor, Code,
   Terminal, ExternalLink, Download, Cloud, Play, Lightbulb, Video,
-  Image, Search, Link2, Mic, FileSearch
+  Image, Search, Link2, Mic, FileSearch, Lock
 } from "lucide-react";
 
 function PageNav() {
@@ -30,6 +30,7 @@ function PageNav() {
     { label: "Content Repos", icon: <Video size={14} />, href: "/repos-content" },
     { label: "Memory Repos", icon: <Brain size={14} />, href: "/repos-memory" },
     { label: "Skills Repos", icon: <Wrench size={14} />, href: "/repos-skills" },
+    { label: "Security & OSINT", icon: <Lock size={14} />, href: "/repos-security" },
     { label: "Goals", icon: <Target size={14} />, href: "/goals" },
     { label: "Journal", icon: <BookOpen size={14} />, href: "/journal" },
     { label: "Settings", icon: <Settings size={14} />, href: "/settings" },
@@ -66,6 +67,7 @@ const REPOS = [
   { name: "VibeVoice", url: "https://github.com/microsoft/VibeVoice", about: "Open-Source Frontier Voice AI from Microsoft.", tags: ["voice", "ai", "microsoft", "open-source"], appUrl: "https://microsoft.github.io/VibeVoice/" },
   { name: "wa-automate-nodejs", url: "https://github.com/open-wa/wa-automate-nodejs", about: "The most reliable tool for chatbots with advanced features.", tags: ["whatsapp", "chatbot", "automation", "node"], appUrl: "https://openwa.dev/" },
   { name: "awesome-generative-ai-guide", url: "https://github.com/aishwaryanr/awesome-generative-ai-guide", about: "A one stop repository for generative AI research updates, interview resources, notebooks and much more!", tags: ["ai", "generative", "research", "guide"], appUrl: "https://www.linkedin.com/in/areganti/" },
+  { name: "worldmonitor", url: "https://github.com/koala73/worldmonitor", about: "Real-time global intelligence dashboard. AI-powered news aggregation from 500+ feeds, geopolitical monitoring, infrastructure tracking, Country Instability Index, finance radar, dual 3D/WebGL map engine, and local AI with Ollama.", tags: ["intelligence", "news", "geopolitical", "dashboard", "ai", "monitoring"], appUrl: "https://worldmonitor.app" },
 ];
 
 const TAG_COLORS: Record<string, string> = {
@@ -84,6 +86,8 @@ const TAG_COLORS: Record<string, string> = {
   "voice": "#e056fd", "microsoft": "#6c5ce7", "open-source": "#fdcb6e",
   "whatsapp": "#00b894", "chatbot": "#6c5ce7", "automation": "#e056fd", "node": "#0984e3",
   "generative": "#fdcb6e", "research": "#6c5ce7", "guide": "#0984e3",
+  "intelligence": "#e17055", "news": "#6c5ce7", "geopolitical": "#0984e3",
+  "dashboard": "#fdcb6e", "monitoring": "#00b894",
 };
 
 export default function ReposContentPage() {
