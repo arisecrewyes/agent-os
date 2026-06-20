@@ -18,7 +18,6 @@ env:
   OWNER: arisecrewyes
 
 jobs:
-  # ── DETERMINE WHAT TO BUILD ──
   matrix:
     runs-on: ubuntu-latest
     outputs:
@@ -33,7 +32,6 @@ jobs:
             echo 'projects=["hermes-agent","odysseus","bolt-diy","content-creator","memory-brain","osint","skills","conductor","hermes-voice","goldie-stack","minimax-hermes","second-brain","dograh","coldcontactxlsx","agent-connector"]' >> $GITHUB_OUTPUT
           fi
 
-  # ── BUILD & PUSH EACH PROJECT ──
   build:
     needs: matrix
     runs-on: ubuntu-latest
@@ -59,7 +57,6 @@ jobs:
           username: ${{ env.OWNER }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── CLONE EXTERNAL REPO ──
       - name: Clone ${{ matrix.project }} source
         working-directory: /tmp
         run: |
@@ -114,17 +111,20 @@ jobs:
               ;;
           esac
 
-      # ── COPY DOCKERFILE ──
-      - name: Copy Dockerfile
+      - name: Copy Dockerfile & source files
         run: |
           if [ -f "agent-projects/dockerfiles/${{ matrix.project }}/Dockerfile" ]; then
             cp "agent-projects/dockerfiles/${{ matrix.project }}/Dockerfile" /tmp/source-repo/Dockerfile
+            # For agent-connector, also copy package.json and server.js
+            if [ "${{ matrix.project }}" = "agent-connector" ]; then
+              cp "agent-projects/dockerfiles/${{ matrix.project }}/package.json" /tmp/source-repo/package.json
+              cp "agent-projects/dockerfiles/${{ matrix.project }}/server.js" /tmp/source-repo/server.js
+            fi
           elif [ ! -f "/tmp/source-repo/Dockerfile" ]; then
             echo "WARNING: No Dockerfile for ${{ matrix.project }}, skipping"
             echo "SKIP=true" >> $GITHUB_ENV
           fi
 
-      # ── BUILD & PUSH ──
       - name: Build & push ${{ matrix.project }}
         if: env.SKIP != 'true'
         uses: docker/build-push-action@v6

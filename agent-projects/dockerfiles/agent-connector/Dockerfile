@@ -4,10 +4,11 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm ci --only=production 2>/dev/null || npm install express
+# Copy package files from the agent-projects directory
+COPY agent-projects/dockerfiles/agent-connector/package.json package.json
+COPY agent-projects/dockerfiles/agent-connector/server.js server.js
 
-COPY server.js .
+RUN npm install --only=production
 
 EXPOSE 8888
 ENV NODE_ENV=production
