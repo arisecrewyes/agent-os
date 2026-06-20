@@ -80,4 +80,4 @@ EXPOSE 8095
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8095
 
-CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8095"]
+CMD ["python", "-m", "uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8095"]

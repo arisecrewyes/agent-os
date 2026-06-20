@@ -67,4 +67,4 @@ EXPOSE 3002
 ENV PYTHONUNBUFFERED=1
 ENV PORT=3002
 
-CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "3002"]
+CMD ["python", "-m", "uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "3002"]

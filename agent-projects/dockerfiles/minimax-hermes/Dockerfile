@@ -53,4 +53,4 @@ EXPOSE 8660
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8660
 
-CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8660"]
+CMD ["python", "-m", "uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8660"]

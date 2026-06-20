@@ -17,4 +17,4 @@ EXPOSE 8643
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8643
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8643"]
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8643"]

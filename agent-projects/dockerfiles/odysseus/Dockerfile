@@ -17,4 +17,4 @@ EXPOSE 7000
 ENV PYTHONUNBUFFERED=1
 ENV PORT=7000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7000"]
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7000"]
