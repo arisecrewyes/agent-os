@@ -60,6 +60,7 @@ jobs:
       - name: Clone ${{ matrix.project }} source
         working-directory: /tmp
         run: |
+          rm -rf source-repo
           case "${{ matrix.project }}" in
             "hermes-agent")
               git clone --depth 1 https://github.com/NousResearch/hermes-agent.git source-repo
@@ -113,31 +114,27 @@ jobs:
 
       - name: Copy Dockerfile & source files
         run: |
-          if [ -f "agent-projects/dockerfiles/${{ matrix.project }}/Dockerfile" ]; then
-            cp "agent-projects/dockerfiles/${{ matrix.project }}/Dockerfile" /tmp/source-repo/Dockerfile
-            if [ "${{ matrix.project }}" = "agent-connector" ]; then
-              cp "agent-projects/dockerfiles/${{ matrix.project }}/package.json" /tmp/source-repo/package.json
-              cp "agent-projects/dockerfiles/${{ matrix.project }}/server.js" /tmp/source-repo/server.js
-            fi
-          elif [ ! -f "/tmp/source-repo/Dockerfile" ]; then
-            echo "WARNING: No Dockerfile for ${{ matrix.project }}, skipping"
-            echo "SKIP=true" >> $GITHUB_ENV
+          rm -f /tmp/source-repo/Dockerfile /tmp/source-repo/main.py
+          cp "agent-projects/dockerfiles/${{ matrix.project }}/Dockerfile" /tmp/source-repo/Dockerfile
+          if [ -f "agent-projects/dockerfiles/${{ matrix.project }}/main.py" ]; then
+            cp "agent-projects/dockerfiles/${{ matrix.project }}/main.py" /tmp/source-repo/main.py
+          fi
+          if [ "${{ matrix.project }}" = "agent-connector" ]; then
+            cp "agent-projects/dockerfiles/${{ matrix.project }}/package.json" /tmp/source-repo/package.json
+            cp "agent-projects/dockerfiles/${{ matrix.project }}/server.js" /tmp/source-repo/server.js
           fi
 
       - name: Build & push ${{ matrix.project }}
-        if: env.SKIP != 'true'
         uses: docker/build-push-action@v6
         with:
           context: /tmp/source-repo
           push: true
-          no-cache: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.project }}:latest
             ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.project }}:${{ github.sha }}
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Verify push
-        if: env.SKIP != 'true'
         run: |
           echo "✅ ${{ matrix.project }} pushed to ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.project }}:latest"
