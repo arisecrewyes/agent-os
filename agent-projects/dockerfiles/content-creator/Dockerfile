@@ -11,16 +11,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Clone reclip as base content tool
 RUN git clone --depth 1 https://github.com/averygan/reclip.git .
 
-RUN pip install --no-cache-dir -r requirements.txt 2>/dev/null || \
-    pip install --no-cache-dir fastapi uvicorn httpx yt-dlp
-
-# Install additional content tools
-RUN pip install --no-cache-dir openai requests Pillow
+# Install all dependencies explicitly
+RUN pip install --no-cache-dir \
+    fastapi uvicorn httpx yt-dlp \
+    openai requests Pillow
 
 EXPOSE 8080
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
-
 
 # Copy entry point
 COPY main.py /app/main.py
