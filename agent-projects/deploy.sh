@@ -1,19 +1,19 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════
-# Agent OS — Master Deploy Script (v2)
+# Agent OS — Master Deploy Script (v3)
 # Run this on your VPS: ssh root@31.220.62.81
 # ═══════════════════════════════════════════════════
 
 set -e
 
 echo "═══════════════════════════════════════════"
-echo "  Agent OS — Phase 3 Deploy v2"
+echo "  Agent OS — Phase 3 Deploy v3"
 echo "═══════════════════════════════════════════"
 
 # ── 1. PULL LATEST CODE ──
 echo ""
 echo "▶ [1/7] Pulling latest code..."
-cd /root/agentos 2>/dev/null || { echo "ERROR: /root/agentos not found. Clone first:"; echo "  git clone https://github.com/arisecrewyes/agent-os.git /root/agentos"; exit 1; }
+cd /root/agentos 2>/dev/null || { echo "ERROR: /root/agentos not found."; exit 1; }
 git pull origin main
 
 # ── 2. GHCR LOGIN ──
@@ -23,11 +23,15 @@ if [ -f /root/.docker/config.json ]; then
     echo "  ✅ Already logged in to GHCR"
 else
     echo "  Logging in to ghcr.io..."
-    echo "YOUR_GITHUB_PAT" | docker login ghcr.io -u arisecrewyes --password-stdin 2>/dev/null || {
-        echo "  ⚠️  GHCR login failed. Images may be private."
-        echo "  To fix: docker login ghcr.io -u arisecrewyes"
-        echo "  Or make images public in GitHub Package settings."
-    }
+    # Set GITHUB_PAT before running this script, or paste it below:
+    # export GITHUB_PAT="github_pat_..."
+    if [ -z "$GITHUB_PAT" ]; then
+        echo "  ⚠️  GITHUB_PAT not set. Set it before running:"
+        echo "  export GITHUB_PAT=github_pat_xxxxxxxxxxxx"
+        echo "  Or: echo 'github_pat_xxx' | docker login ghcr.io -u arisecrewyes --password-stdin"
+    else
+        echo "$GITHUB_PAT" | docker login ghcr.io -u arisecrewyes --password-stdin 2>/dev/null && echo "  ✅ GHCR login OK" || echo "  ⚠️  GHCR login failed"
+    fi
 fi
 
 # ── 3. CREATE PROJECT DIRECTORIES ──
@@ -67,7 +71,6 @@ echo ""
 echo "▶ [7/7] Deploying all projects..."
 echo ""
 
-# Check for .env file
 if [ ! -f /root/agentos/.env ]; then
     echo "  ⚠️  No .env file found. Copy from .env.example:"
     echo "  cp /root/agentos/.env.example /root/agentos/.env"
@@ -104,7 +107,6 @@ echo "  Deployed: $DEPLOYED"
 echo "  Failed:   $FAILED"
 echo ""
 
-# ── VERIFY ──
 echo "▶ Verifying containers..."
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | head -30
 
