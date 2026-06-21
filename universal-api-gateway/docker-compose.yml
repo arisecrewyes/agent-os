@@ -1,0 +1,25 @@
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: universal-api-gateway
+    restart: unless-stopped
+    expose:
+      - "8889"
+    environment:
+      - NODE_ENV=production
+      - PORT=8889
+      # Proton Mail SMTP (configure these)
+      - PROTON_SMTP_HOST=mail.protonmail.ch
+      - PROTON_SMTP_PORT=587
+      - PROTON_SMTP_USER=${PROTON_SMTP_USER:-}
+      - PROTON_SMTP_PASSWORD=${PROTON_SMTP_PASSWORD:-}
+    networks:
+      - root_default
+    volumes:
+      - /app/node_modules
+
+networks:
+  root_default:
+    external: true
